@@ -1,0 +1,237 @@
+/**
+ * Forever Remembered — Visual Theme CSS Variables
+ * 4 themes for Phase 1: golden-hour, classic, garden, minimal
+ * Applied via data-theme attribute on the tribute page root
+ */
+
+/* ============================================================
+   GOLDEN HOUR (Default)
+   Warm amber, candlelight, vintage warmth
+   ============================================================ */
+[data-theme="golden-hour"] {
+  --color-hero-overlay: rgba(120, 70, 20, 0.55);
+  --color-primary: #D97706;
+  --color-primary-dark: #B45309;
+  --color-background: #FFFBF5;
+  --color-surface: #FEF3E2;
+  --color-text: #1C1007;
+  --color-text-secondary: #3D2B14;
+  --color-muted: #6B5A45;
+  --color-border: #F0E0C8;
+  --color-candle: #F59E0B;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-size-hero: clamp(2.5rem, 8vw, 5rem);
+  --font-size-headline: clamp(1.5rem, 4vw, 2.5rem);
+  --border-radius: 12px;
+}
+
+/* ============================================================
+   CLASSIC
+   Black, white, deep navy — formal, dignified
+   ============================================================ */
+[data-theme="classic"] {
+  --color-hero-overlay: rgba(10, 20, 40, 0.6);
+  --color-primary: #1E3A5F;
+  --color-primary-dark: #152A47;
+  --color-background: #FAFAFA;
+  --color-surface: #F0F2F5;
+  --color-text: #0A0A0A;
+  --color-text-secondary: #2C2C2C;
+  --color-muted: #6B6B6B;
+  --color-border: #E0E0E0;
+  --color-candle: #C4A35A;
+  --font-serif: 'EB Garamond', 'Garamond', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-size-hero: clamp(2.5rem, 8vw, 5rem);
+  --font-size-headline: clamp(1.5rem, 4vw, 2.5rem);
+  --border-radius: 8px;
+}
+
+/* ============================================================
+   GARDEN
+   Sage green, blush, cream — nature, gentle
+   ============================================================ */
+[data-theme="garden"] {
+  --color-hero-overlay: rgba(40, 70, 50, 0.5);
+  --color-primary: #4D7C5F;
+  --color-primary-dark: #3A6349;
+  --color-background: #F8FBF5;
+  --color-surface: #EFF7EC;
+  --color-text: #1A2E1F;
+  --color-text-secondary: #2E4A35;
+  --color-muted: #5A7260;
+  --color-border: #D0E8D5;
+  --color-candle: #E8A87C;
+  --font-serif: 'Cormorant Garamond', 'Garamond', Georgia, serif;
+  --font-sans: 'Lato', system-ui, sans-serif;
+  --font-size-hero: clamp(2.5rem, 8vw, 5rem);
+  --font-size-headline: clamp(1.5rem, 4vw, 2.5rem);
+  --border-radius: 16px;
+}
+
+/* ============================================================
+   MINIMAL
+   White, light gray, charcoal — clean, editorial
+   ============================================================ */
+[data-theme="minimal"] {
+  --color-hero-overlay: rgba(20, 20, 20, 0.5);
+  --color-primary: #374151;
+  --color-primary-dark: #1F2937;
+  --color-background: #FFFFFF;
+  --color-surface: #F9F9F9;
+  --color-text: #111827;
+  --color-text-secondary: #374151;
+  --color-muted: #9CA3AF;
+  --color-border: #E5E7EB;
+  --color-candle: #FBBF24;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-size-hero: clamp(2.5rem, 8vw, 5rem);
+  --font-size-headline: clamp(1.5rem, 4vw, 2.5rem);
+  --border-radius: 4px;
+}
+
+/* ============================================================
+   SHARED TRIBUTE PAGE STYLES
+   Apply regardless of theme
+   ============================================================ */
+
+.tribute-root {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tribute-hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.tribute-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--color-hero-overlay) 0%,
+    rgba(0, 0, 0, 0.1) 60%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+.tribute-hero__content {
+  position: relative;
+  z-index: 2;
+  padding: 2rem 1.5rem 4rem;
+  width: 100%;
+  text-align: center;
+}
+
+.tribute-hero__name {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-hero);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  margin: 0 0 0.5rem;
+}
+
+.tribute-hero__dates {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem;
+}
+
+.tribute-hero__headline {
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.tribute-section {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.tribute-section p {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+}
+
+.tribute-pull-quote {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-style: italic;
+  color: var(--color-text);
+  line-height: 1.5;
+  border-left: 3px solid var(--color-primary);
+  padding: 1rem 0 1rem 1.5rem;
+  margin: 2rem 0;
+}
+
+/* Candle animation */
+@keyframes flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1) rotate(-1deg); opacity: 1; }
+  25% { transform: scaleY(1.05) scaleX(0.95) rotate(1deg); opacity: 0.95; }
+  50% { transform: scaleY(0.95) scaleX(1.05) rotate(-2deg); opacity: 1; }
+  75% { transform: scaleY(1.02) scaleX(0.98) rotate(1deg); opacity: 0.98; }
+}
+
+.candle-flame {
+  animation: flicker 2s ease-in-out infinite;
+  transform-origin: bottom center;
+  display: inline-block;
+}
+
+/* Loading screen */
+@keyframes pulse-fade {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.generation-text {
+  animation: pulse-fade 3s ease-in-out infinite;
+}
+
+/* Scroll indicator */
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+.scroll-indicator {
+  animation: bounce-down 2s ease-in-out infinite;
+}
+
+/* Theme switcher */
+.theme-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-swatch:hover,
+.theme-swatch.active {
+  transform: scale(1.2);
+  border-color: var(--color-primary);
+}

@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&family=Lato:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Default to golden-hour palette */
+    --color-hero-overlay: rgba(120, 70, 20, 0.55);
+    --color-primary: #D97706;
+    --color-primary-dark: #B45309;
+    --color-background: #FFFBF5;
+    --color-surface: #FEF3E2;
+    --color-text: #1C1007;
+    --color-text-secondary: #3D2B14;
+    --color-muted: #6B5A45;
+    --color-border: #F0E0C8;
+    --color-candle: #F59E0B;
+    --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Prevent iOS auto-zoom on inputs */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* Accessible focus styles */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .text-muted {
+    color: var(--color-muted);
+  }
+
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+
+  /* Touch targets — minimum 44px for accessibility */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Safe area insets for notched phones */
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
+/* Import theme variables */
+@import '../styles/themes.css';
