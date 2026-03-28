@@ -19,6 +19,7 @@ interface TributePageProps {
   photos: TributePhoto[]
   heroPhoto: TributePhoto | null
   isCreator: boolean
+  orderSuccess?: boolean
 }
 
 export function TributePage({
@@ -26,12 +27,14 @@ export function TributePage({
   photos,
   heroPhoto,
   isCreator,
+  orderSuccess = false,
 }: TributePageProps) {
   const [theme, setTheme] = useState<TemplateId>(
     (tribute.template_id as TemplateId) || 'golden-hour'
   )
   const [showUpsell, setShowUpsell] = useState(false)
   const [upsellDismissed, setUpsellDismissed] = useState(false)
+  const [showOrderBanner, setShowOrderBanner] = useState(orderSuccess)
 
   // Load saved theme preference from localStorage
   useEffect(() => {
@@ -47,8 +50,9 @@ export function TributePage({
   }
 
   // Show upsell drawer 30s after creator first views their tribute
+  // Don't show if they just completed an order
   useEffect(() => {
-    if (!isCreator || upsellDismissed) return
+    if (!isCreator || upsellDismissed || orderSuccess) return
 
     // Check if already dismissed in this session
     const dismissed = sessionStorage.getItem(`upsell-dismissed-${tribute.slug}`)
@@ -59,7 +63,7 @@ export function TributePage({
     }, 30000) // 30 seconds
 
     return () => clearTimeout(timeout)
-  }, [isCreator, tribute.slug, upsellDismissed])
+  }, [isCreator, tribute.slug, upsellDismissed, orderSuccess])
 
   const handleUpsellClose = () => {
     setShowUpsell(false)
@@ -76,6 +80,41 @@ export function TributePage({
 
   return (
     <div data-theme={theme} className="tribute-root">
+      {/* Order success banner */}
+      {showOrderBanner && (
+        <div
+          className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between gap-3"
+          style={{
+            background: 'linear-gradient(135deg, #78340f, #D97706)',
+            paddingTop: 'calc(12px + env(safe-area-inset-top))',
+          }}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-3 flex-1">
+            <span className="text-xl flex-shrink-0" aria-hidden="true">✨</span>
+            <div>
+              <p className="font-serif font-semibold text-white text-sm leading-tight">
+                Your order is confirmed.
+              </p>
+              <p className="text-white/80 text-xs leading-snug font-serif">
+                Thank you for preserving {tribute.subject_name}&apos;s tribute. We&apos;ll be in touch soon.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowOrderBanner(false)}
+            className="flex-shrink-0 text-white/60 hover:text-white text-xl leading-none p-1 transition-colors"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Spacer so hero isn't hidden behind banner */}
+      {showOrderBanner && <div style={{ height: '64px' }} aria-hidden="true" />}
+
       {/* Hero */}
       <HeroSection
         subjectName={tribute.subject_name}

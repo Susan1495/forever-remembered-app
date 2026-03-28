@@ -12,7 +12,7 @@ import { TributePage } from './TributePage'
 
 interface Props {
   params: { slug: string }
-  searchParams: { created?: string }
+  searchParams: { created?: string; order?: string }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -114,6 +114,7 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
   const photos = await getTributePhotos(tribute.id)
   const heroPhoto = photos[tribute.hero_photo_idx || 0] || photos[0]
   const isCreator = searchParams.created === '1'
+  const orderSuccess = searchParams.order === 'success'
 
   return (
     <TributePage
@@ -121,6 +122,7 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
       photos={photos}
       heroPhoto={heroPhoto || null}
       isCreator={isCreator}
+      orderSuccess={orderSuccess}
     />
   )
 }

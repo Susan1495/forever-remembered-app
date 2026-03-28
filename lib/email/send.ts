@@ -1,11 +1,12 @@
 /**
  * Email sending via Resend
- * Tribute ready + upsell interest emails
+ * Tribute ready + upsell interest + order confirmation emails
  */
 
 import { Resend } from 'resend'
 import { TributeReadyEmail } from '@/emails/tribute-ready'
 import { UpsellInterestEmail } from '@/emails/upsell-interest'
+import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.EMAIL_FROM || 'hello@foreverremembered.ai'
@@ -73,5 +74,44 @@ export async function sendUpsellInterestEmail(options: {
     })
   } catch (error) {
     console.error('Failed to send upsell interest email:', error)
+  }
+}
+
+/**
+ * Send order confirmation email after successful Stripe payment
+ */
+export async function sendOrderConfirmationEmail(options: {
+  to: string
+  subjectName: string
+  tributeSlug: string
+  tier: 'keep' | 'cherish' | 'legacy'
+  amountCents: number
+}): Promise<void> {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('placeholder')) {
+    console.warn('Resend not configured — skipping order confirmation email')
+    return
+  }
+
+  const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}`
+  const amountFormatted = `$${(options.amountCents / 100).toFixed(0)}`
+  const tierLabel = options.tier.charAt(0).toUpperCase() + options.tier.slice(1)
+
+  try {
+    await resend.emails.send({
+      from: `Forever Remembered <${FROM}>`,
+      to: options.to,
+      replyTo: 'support@foreverremembered.ai',
+      subject: `Your ${tierLabel} order for ${options.subjectName} is confirmed ✨`,
+      react: OrderConfirmationEmail({
+        subjectName: options.subjectName,
+        tributeUrl,
+        tier: options.tier,
+        amountFormatted,
+        customerEmail: options.to,
+      }),
+    })
+  } catch (error) {
+    console.error('Failed to send order confirmation email:', error)
+    // Don't throw — email failure shouldn't block order processing
   }
 }

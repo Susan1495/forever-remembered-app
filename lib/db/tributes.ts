@@ -73,6 +73,8 @@ export async function updateTribute(
     status: TributeStatus
     published_at: string
     creator_email: string
+    tier: 'free' | 'keep' | 'cherish' | 'legacy'
+    expires_at: string | null
   }>
 ): Promise<void> {
   const db = createServerClient()

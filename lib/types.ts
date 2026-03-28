@@ -52,7 +52,10 @@ export interface Tribute {
   candle_count: number
   created_at: string
   published_at: string | null
-  expires_at: string
+  expires_at: string | null
+  // Phase 2 — added via 002_orders.sql migration
+  tier: 'free' | 'keep' | 'cherish' | 'legacy' | null
+  custom_subdomain: string | null
 }
 
 export interface TributePhoto {
