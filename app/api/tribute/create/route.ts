@@ -5,9 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { waitUntil } from '@vercel/functions'
 import { createTribute } from '@/lib/db/tributes'
 import { insertTributePhotos } from '@/lib/db/photos'
-import { generateTribute } from '@/lib/ai/generate-tribute'
 import { generateSlug, determineAgeGroup, isPersonLiving } from '@/lib/slug'
 import { checkTributeCreationLimit } from '@/lib/rate-limit'
 import type { CreateTributeRequest, CreateTributeResponse } from '@/lib/types'
@@ -95,19 +95,20 @@ export async function POST(req: NextRequest) {
       await insertTributePhotos(tribute.id, photoRecords)
     }
 
-    // Kick off AI generation pipeline asynchronously
-    // Using a non-blocking promise (Vercel Edge Runtime compatible)
-    // Generation updates tribute status when complete
-    const generationPromise = generateTribute(tribute.id)
-
-    // On Vercel, use waitUntil to keep the function alive for generation
-    if (typeof globalThis !== 'undefined' && 'EdgeRuntime' in globalThis) {
-      // Edge runtime - generation runs in background
-      generationPromise.catch(err => console.error('Generation failed:', err))
-    } else {
-      // Node runtime - let it run async
-      generationPromise.catch(err => console.error('Generation failed:', err))
-    }
+    // Kick off AI generation pipeline via a separate internal endpoint.
+    // waitUntil keeps the Vercel function alive after the HTTP response is
+    // sent, so the generation pipeline isn't killed mid-flight.
+    const generateUrl = `${process.env.NEXT_PUBLIC_URL}/api/tribute/generate`
+    waitUntil(
+      fetch(generateUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': process.env.INTERNAL_SECRET!,
+        },
+        body: JSON.stringify({ tributeId: tribute.id }),
+      }).catch(err => console.error('[create] Failed to kick off generation:', err))
+    )
 
     const response: CreateTributeResponse = {
       slug: tribute.slug,
