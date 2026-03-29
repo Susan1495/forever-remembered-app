@@ -67,6 +67,8 @@ export interface TributePhoto {
   file_size_bytes: number | null
   width: number | null
   height: number | null
+  focal_point_x: number | null
+  focal_point_y: number | null
   created_at: string
 }
 

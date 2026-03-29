@@ -5,10 +5,11 @@
 
 import { moderateContent, ModerationError } from './moderation'
 import { analyzePhotos } from './analyze-photos'
+import { detectFocalPoint } from './detect-focal-point'
 import { generateTributeText } from './generate-text'
 import { generatePlaceholderArt } from './generate-art'
 import { getTributeById, updateTribute } from '@/lib/db/tributes'
-import { getTributePhotos, insertTributePhoto } from '@/lib/db/photos'
+import { getTributePhotos, insertTributePhoto, updateTributePhoto } from '@/lib/db/photos'
 import { sendTributeReadyEmail } from '@/lib/email/send'
 import { createServerClient } from '@/lib/supabase'
 import type { AITheme, TemplateId } from '@/lib/types'
@@ -68,6 +69,24 @@ export async function generateTribute(tributeId: string): Promise<void> {
     if (photos.length > 0) {
       const photoUrls = photos.map(p => p.cdn_url)
       photoAnalysis = await analyzePhotos(photoUrls, tribute)
+    }
+
+    // Step 2b: Detect focal point for the hero photo
+    if (photos.length > 0 && photoAnalysis) {
+      const heroIdx = photoAnalysis.heroPhotoIndex
+      const heroPhoto = photos[heroIdx] || photos[0]
+      if (heroPhoto) {
+        try {
+          const focal = await detectFocalPoint(heroPhoto.cdn_url)
+          await updateTributePhoto(heroPhoto.id, {
+            focal_point_x: focal.x,
+            focal_point_y: focal.y,
+          })
+        } catch (focalError) {
+          // Non-fatal — hero will use CSS default if focal point is missing
+          console.warn('[generateTribute] Focal point detection failed:', focalError)
+        }
+      }
     }
 
     // Step 3: Generate placeholder art if no photos

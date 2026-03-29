@@ -47,6 +47,24 @@ export async function insertTributePhoto(
   return data as TributePhoto
 }
 
+export async function updateTributePhoto(
+  photoId: string,
+  updates: Partial<{
+    focal_point_x: number | null
+    focal_point_y: number | null
+  }>
+): Promise<void> {
+  const db = createServerClient()
+  const { error } = await db
+    .from('tribute_photos')
+    .update(updates)
+    .eq('id', photoId)
+
+  if (error) {
+    throw new Error(`Failed to update tribute photo ${photoId}: ${error.message}`)
+  }
+}
+
 export async function insertTributePhotos(
   tributeId: string,
   photos: Array<{

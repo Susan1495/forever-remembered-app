@@ -124,6 +124,8 @@ export function TributePage({
         isLiving={tribute.is_living}
         heroPhotoUrl={heroPhoto?.cdn_url || null}
         templateId={theme}
+        focalPointX={heroPhoto?.focal_point_x}
+        focalPointY={heroPhoto?.focal_point_y}
       />
 
       {/* Story */}

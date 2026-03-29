@@ -11,6 +11,8 @@ interface HeroSectionProps {
   isLiving: boolean
   heroPhotoUrl: string | null
   templateId: string
+  focalPointX?: number | null
+  focalPointY?: number | null
 }
 
 export function HeroSection({
@@ -21,7 +23,14 @@ export function HeroSection({
   isLiving,
   heroPhotoUrl,
   templateId,
+  focalPointX,
+  focalPointY,
 }: HeroSectionProps) {
+  // Build object-position from AI-detected focal point, or fall back to top-center
+  const objectPosition =
+    focalPointX != null && focalPointY != null
+      ? `${focalPointX * 100}% ${focalPointY * 100}%`
+      : 'center 15%'
   const datesDisplay = formatDates(birthDate, deathDate, isLiving)
 
   return (
@@ -36,7 +45,7 @@ export function HeroSection({
           src={heroPhotoUrl}
           alt={`${subjectName}`}
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: 'center 15%' }}
+          style={{ objectPosition }}
           priority-load="true"
         />
       ) : (
