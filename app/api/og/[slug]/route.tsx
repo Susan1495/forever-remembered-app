@@ -65,104 +65,92 @@ export async function GET(
           overflow: 'hidden',
         }}
       >
-        {/* Hero photo background */}
+        {/* Left: Portrait photo panel */}
         {heroPhotoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={heroPhotoUrl}
-            alt=""
-            style={{
+          <div style={{
+            display: 'flex',
+            width: '420px',
+            height: '630px',
+            flexShrink: 0,
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroPhotoUrl}
+              alt=""
+              style={{
+                width: '420px',
+                height: '630px',
+                objectFit: 'cover',
+                objectPosition: `${Math.round((heroPhoto?.focal_point_x ?? 0.5) * 100)}% ${Math.round((heroPhoto?.focal_point_y ?? 0.25) * 100)}%`,
+              }}
+            />
+            {/* Right-edge fade into dark panel */}
+            <div style={{
+              display: 'flex',
               position: 'absolute',
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: 0.7,
-            }}
-          />
+              top: 0, right: 0, bottom: 0,
+              width: '80px',
+              background: 'linear-gradient(to right, transparent, #1a1412)',
+            }} />
+          </div>
         )}
 
-        {/* Dark gradient overlay */}
-        <div
-          style={{
+        {/* Right: Text panel */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '50px 60px',
+          flex: 1,
+        }}>
+          {/* Logo top */}
+          <div style={{
             display: 'flex',
-            position: 'absolute',
-            inset: 0,
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)',
-          }}
-        />
-
-        {/* Logo watermark */}
-        <div
-          style={{
-            display: 'flex',
-            position: 'absolute',
-            top: 40,
-            right: 60,
-            color: 'rgba(255,255,255,0.7)',
-            fontSize: 22,
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: 20,
             fontFamily: 'Georgia, serif',
             letterSpacing: '0.05em',
-          }}
-        >
-          Forever Remembered
-        </div>
+          }}>
+            Forever Remembered
+          </div>
 
-        {/* Name and info */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'absolute',
-            bottom: 60,
-            left: 60,
-            right: 60,
-          }}
-        >
-          {/* Subject name */}
-          <div
-            style={{
+          {/* Center: Name + dates + headline */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{
               display: 'flex',
               color: 'white',
-              fontSize: 64,
+              fontSize: heroPhotoUrl ? 52 : 64,
               fontFamily: 'Georgia, serif',
               fontWeight: 700,
               lineHeight: 1.1,
-              marginBottom: 12,
-              textShadow: '0 2px 20px rgba(0,0,0,0.5)',
-            }}
-          >
-            {displayName}
-          </div>
-
-          {/* Dates */}
-          <div
-            style={{
+            }}>
+              {displayName}
+            </div>
+            <div style={{
               display: 'flex',
-              color: 'rgba(255,255,255,0.8)',
+              color: 'rgba(255,255,255,0.6)',
               fontSize: 22,
               fontFamily: 'Georgia, serif',
               letterSpacing: '0.1em',
-              marginBottom: 16,
-            }}
-          >
-            {dates}
-          </div>
-
-          {/* AI headline */}
-          <div
-            style={{
+            }}>
+              {dates}
+            </div>
+            <div style={{
               display: 'flex',
-              color: 'rgba(255,255,255,0.85)',
-              fontSize: 26,
+              color: 'rgba(255,220,150,0.9)',
+              fontSize: 24,
               fontFamily: 'Georgia, serif',
               fontStyle: 'italic',
-              lineHeight: 1.3,
-              maxWidth: '900px',
-            }}
-          >
-            {headline}
+              lineHeight: 1.4,
+            }}>
+              {headline}
+            </div>
           </div>
+
+          {/* Bottom: Candle emoji */}
+          <div style={{ display: 'flex', fontSize: 32 }}>🕯️</div>
         </div>
       </div>
     ),
