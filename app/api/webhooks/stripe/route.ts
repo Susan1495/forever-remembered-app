@@ -16,7 +16,7 @@ import { headers } from 'next/headers'
 import { createOrder } from '@/lib/db/orders'
 import { updateTribute, getTributeBySlug } from '@/lib/db/tributes'
 import { sendOrderConfirmationEmail } from '@/lib/email/send'
-import { triggerFulfillment } from '@/lib/fulfillment/trigger'
+import { runFulfillment } from '@/lib/fulfillment'
 
 // Disable body parsing — Stripe needs raw body for signature verification
 export const runtime = 'nodejs'
@@ -167,9 +167,13 @@ async function handleCheckoutSessionCompleted(
 
   // 4. Trigger fulfillment pipeline (non-blocking — Stripe will retry on 500 if needed)
   console.log(`Triggering fulfillment for tier "${tier}" — order ${order.id}`)
-  // Run asynchronously so the webhook returns 200 quickly
-  // Fulfillment failures are logged and the order is marked 'failed' in DB
-  triggerFulfillment({
+  // Run asynchronously so the webhook returns 200 quickly.
+  // Fulfillment failures are logged and the order is marked 'failed' in DB.
+  // Use runFulfillment (lib/fulfillment/index.ts) which routes:
+  //   keep    → tier1.ts  (Puppeteer memorial card PDF)
+  //   cherish → tier2.ts  (Puppeteer memorial card + 8-page book + QR code)
+  //   legacy  → trigger.ts (react-pdf print-ready files)
+  runFulfillment({
     orderId: order.id,
     tributeId,
     tributeSlug,

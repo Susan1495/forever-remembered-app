@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { updateOrderStatus } from '@/lib/db/orders'
-import { triggerFulfillment } from '@/lib/fulfillment/trigger'
+import { runFulfillment } from '@/lib/fulfillment'
 import { createServerClient } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
   await updateOrderStatus(order.id, 'processing')
 
   // Trigger fulfillment (async — returns immediately)
-  triggerFulfillment({
+  runFulfillment({
     orderId: order.id,
     tributeId: order.tribute_id,
     tributeSlug,
