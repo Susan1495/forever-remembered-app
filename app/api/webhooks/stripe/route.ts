@@ -16,6 +16,7 @@ import { headers } from 'next/headers'
 import { createOrder } from '@/lib/db/orders'
 import { updateTribute, getTributeBySlug } from '@/lib/db/tributes'
 import { sendOrderConfirmationEmail } from '@/lib/email/send'
+import { triggerFulfillment } from '@/lib/fulfillment/trigger'
 
 // Disable body parsing — Stripe needs raw body for signature verification
 export const runtime = 'nodejs'
@@ -164,9 +165,17 @@ async function handleCheckoutSessionCompleted(
     })
   }
 
-  // 4. TODO (Phase 2 continuation): trigger fulfillment job per tier
-  // - keep: generate PDF memorial card
-  // - cherish: + photo restoration + memorial book PDF
-  // - legacy: + AI biography + video tribute + Lulu book order
-  console.log(`Fulfillment TODO for tier "${tier}" — order ${order.id}`)
+  // 4. Trigger fulfillment pipeline (non-blocking — Stripe will retry on 500 if needed)
+  console.log(`Triggering fulfillment for tier "${tier}" — order ${order.id}`)
+  // Run asynchronously so the webhook returns 200 quickly
+  // Fulfillment failures are logged and the order is marked 'failed' in DB
+  triggerFulfillment({
+    orderId: order.id,
+    tributeId,
+    tributeSlug,
+    tier,
+    customerEmail,
+  }).catch((err) => {
+    console.error(`Fulfillment pipeline error for order ${order.id}:`, err)
+  })
 }
