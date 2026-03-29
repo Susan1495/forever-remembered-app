@@ -25,7 +25,10 @@ export function HeroSection({
   const datesDisplay = formatDates(birthDate, deathDate, isLiving)
 
   return (
-    <section className="tribute-hero relative" style={{ minHeight: '100svh' }}>
+    <section
+      className="tribute-hero relative"
+      style={{ minHeight: 'min(100svh, 600px)', maxHeight: '80vh' }}
+    >
       {/* Background photo */}
       {heroPhotoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -33,6 +36,7 @@ export function HeroSection({
           src={heroPhotoUrl}
           alt={`${subjectName}`}
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: 'center top' }}
           priority-load="true"
         />
       ) : (
