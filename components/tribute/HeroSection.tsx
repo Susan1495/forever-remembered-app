@@ -27,7 +27,7 @@ export function HeroSection({
   return (
     <section
       className="tribute-hero relative"
-      style={{ minHeight: 'min(100svh, 600px)', maxHeight: '80vh' }}
+      style={{ minHeight: 'min(100svh, 500px)', maxHeight: 'min(80vh, 500px)' }}
     >
       {/* Background photo */}
       {heroPhotoUrl ? (
@@ -36,7 +36,7 @@ export function HeroSection({
           src={heroPhotoUrl}
           alt={`${subjectName}`}
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: 'center top' }}
+          style={{ objectPosition: 'center 15%' }}
           priority-load="true"
         />
       ) : (
