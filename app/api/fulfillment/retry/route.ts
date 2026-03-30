@@ -18,6 +18,7 @@ import { runFulfillment } from '@/lib/fulfillment'
 import { createServerClient } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
   // Check admin secret

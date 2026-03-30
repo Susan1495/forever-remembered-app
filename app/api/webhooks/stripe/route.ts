@@ -20,6 +20,10 @@ import { runFulfillment } from '@/lib/fulfillment'
 
 // Disable body parsing — Stripe needs raw body for signature verification
 export const runtime = 'nodejs'
+// Allow up to 60s for PDF generation + email delivery on Vercel Pro
+// Free plan max is 10s — if you're on free, PDF fulfillment runs async and
+// the webhook returns 200 immediately while fulfillment runs in the background.
+export const maxDuration = 60
 
 // Tier amounts for validation / DB recording
 const TIER_AMOUNTS: Record<string, number> = {

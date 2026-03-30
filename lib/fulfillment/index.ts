@@ -2,26 +2,30 @@
  * Fulfillment Pipeline — Entry Point
  *
  * Called from the Stripe webhook handler after checkout.session.completed.
- * Routes to the correct tier handler (tier1 / tier2) and handles errors.
+ * Routes to the correct tier handler and handles errors.
  *
  * Usage:
  *   import { runFulfillment } from '@/lib/fulfillment'
  *   await runFulfillment({ orderId, tributeId, tributeSlug, tier, customerEmail })
  *
- * This is a thin orchestration layer. Tier-specific logic lives in:
- *   lib/fulfillment/tier1.ts  — Keep ($39)
- *   lib/fulfillment/tier2.ts  — Cherish ($127)
- *   lib/fulfillment/pdf.ts    — Puppeteer PDF generation
+ * PDF rendering strategy:
+ * ─────────────────────────────────────────────────────────────────────
+ * On Vercel (VERCEL=1): all tiers use trigger.ts → @react-pdf/renderer
+ *   • Pure Node.js, no browser binary, works within 50MB function limit
+ *   • Produces clean, printable PDFs — good quality for all tiers
  *
- * The legacy tier ($397) continues to use the existing trigger.ts handler
- * which calls generatePrintReadyPDF from generate-pdf.tsx (react-pdf).
+ * On self-hosted / local dev: tier1/tier2 use Puppeteer HTML→PDF
+ *   • Higher visual quality (CSS gradients, custom layout, etc.)
+ *   • Uses @sparticuz/chromium on Lambda-compatible environments
+ *
+ * Legacy tier ($397) always uses trigger.ts (react-pdf) for maximum
+ * reliability — it produces the high-res print-ready variant via
+ * generatePrintReadyPDF which is already tuned for professional print.
+ * ─────────────────────────────────────────────────────────────────────
  */
 
 import { updateOrderStatus } from '@/lib/db/orders'
-import { fulfillTier1 } from '@/lib/fulfillment/tier1'
-import { fulfillTier2 } from '@/lib/fulfillment/tier2'
-// Legacy tier uses the original trigger (react-pdf based)
-import { triggerFulfillment as triggerLegacyFulfillment } from '@/lib/fulfillment/trigger'
+import { triggerFulfillment } from '@/lib/fulfillment/trigger'
 
 export interface FulfillmentInput {
   orderId: string
@@ -30,6 +34,9 @@ export interface FulfillmentInput {
   tier: 'keep' | 'cherish' | 'legacy'
   customerEmail: string
 }
+
+/** True when running on Vercel serverless infrastructure */
+const IS_VERCEL = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
 
 /**
  * Run the fulfillment pipeline for a paid order.
@@ -44,28 +51,22 @@ export async function runFulfillment(input: FulfillmentInput): Promise<void> {
   const { orderId, tributeId, tributeSlug, tier, customerEmail } = input
   const tag = `[fulfillment:${orderId}:${tier}]`
 
-  console.log(`${tag} Starting fulfillment pipeline...`)
+  console.log(`${tag} Starting fulfillment pipeline... (env: ${IS_VERCEL ? 'vercel' : 'local'})`)
 
   try {
-    switch (tier) {
-      case 'keep':
+    if (!IS_VERCEL && (tier === 'keep' || tier === 'cherish')) {
+      // Local / non-serverless: use Puppeteer-based HTML→PDF for richer output
+      const { fulfillTier1 } = await import('@/lib/fulfillment/tier1')
+      const { fulfillTier2 } = await import('@/lib/fulfillment/tier2')
+
+      if (tier === 'keep') {
         await fulfillTier1({ orderId, tributeId, tributeSlug, customerEmail })
-        break
-
-      case 'cherish':
+      } else {
         await fulfillTier2({ orderId, tributeId, tributeSlug, customerEmail })
-        break
-
-      case 'legacy':
-        // Legacy tier uses the battle-tested trigger.ts handler
-        await triggerLegacyFulfillment({ orderId, tributeId, tributeSlug, tier, customerEmail })
-        break
-
-      default: {
-        // TypeScript exhaustiveness check
-        const _exhaustive: never = tier
-        throw new Error(`Unknown fulfillment tier: ${String(_exhaustive)}`)
       }
+    } else {
+      // Vercel / Lambda / legacy tier: use @react-pdf/renderer (no browser required)
+      await triggerFulfillment({ orderId, tributeId, tributeSlug, tier, customerEmail })
     }
 
     console.log(`${tag} ✓ Fulfillment complete.`)

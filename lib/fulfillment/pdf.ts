@@ -3,7 +3,7 @@
  *
  * Generates beautiful memorial PDFs by rendering HTML/CSS in a headless
  * browser and exporting to PDF. This approach enables rich typography,
- * gradients, and custom Google Fonts.
+ * gradients, and web-safe system fonts (no external font dependencies).
  *
  * Two exports:
  *   generateMemorialCard()    — 1-page portrait card (Keep tier)
@@ -82,7 +82,7 @@ function buildMemorialCardHtml(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap');
+  /* System serif/sans stacks — no external font loading, works offline + on Vercel */
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -307,7 +307,7 @@ function buildMemorialBookHtml(
   const heroDataUrl = photoDataUrls[0] || ''
 
   const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;700&display=swap');
+  /* System serif/sans stacks — no external font loading, works offline + on Vercel */
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -665,6 +665,45 @@ ${page8}
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+// ── Browser launcher (Vercel-compatible) ─────────────────────────────────────
+
+/**
+ * Launch a headless browser.
+ * - Production (Vercel / AWS Lambda): uses @sparticuz/chromium + puppeteer-core
+ * - Local development: uses the bundled puppeteer Chromium
+ *
+ * Detection: VERCEL env var is set to "1" by Vercel automatically.
+ */
+async function launchBrowser() {
+  const isVercel = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+
+  if (isVercel) {
+    // Vercel serverless: use @sparticuz/chromium (pre-built, Lambda-compatible)
+    const chromium = (await import('@sparticuz/chromium')).default
+    const puppeteerCore = await import('puppeteer-core')
+    const executablePath = await chromium.executablePath()
+    return puppeteerCore.default.launch({
+      args: chromium.args,
+      defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
+      executablePath,
+      headless: 'shell',
+    })
+  } else {
+    // Local dev: use full puppeteer with its bundled Chromium
+    const puppeteer = await import('puppeteer')
+    return puppeteer.default.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+      ],
+    })
+  }
+}
+
 /**
  * Generate a 1-page portrait memorial card PDF (Keep tier, $39)
  * Returns a Buffer containing the PDF bytes.
@@ -673,17 +712,7 @@ export async function generateMemorialCard(
   tribute: Tribute,
   photos: TributePhoto[]
 ): Promise<Buffer> {
-  const puppeteer = await import('puppeteer')
-  const browser = await puppeteer.default.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-software-rasterizer',
-    ],
-  })
+  const browser = await launchBrowser()
 
   try {
     const page = await browser.newPage()
@@ -699,7 +728,7 @@ export async function generateMemorialCard(
 
     const html = buildMemorialCardHtml(tribute, heroDataUrl, tributeText)
 
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 })
+    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 30000 })
 
     // A5 portrait ≈ 595 × 842 pt (same as A4 height, portrait card feel)
     const pdf = await page.pdf({
@@ -723,17 +752,7 @@ export async function generateMemorialBook(
   tribute: Tribute,
   photos: TributePhoto[]
 ): Promise<Buffer> {
-  const puppeteer = await import('puppeteer')
-  const browser = await puppeteer.default.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-software-rasterizer',
-    ],
-  })
+  const browser = await launchBrowser()
 
   try {
     const page = await browser.newPage()
@@ -745,7 +764,7 @@ export async function generateMemorialBook(
 
     const html = buildMemorialBookHtml(tribute, photos, photoDataUrls)
 
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 45000 })
+    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 45000 })
 
     const pdf = await page.pdf({
       format: 'A4',
