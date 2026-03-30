@@ -26,14 +26,17 @@ export default function LandingPage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('/images/hero-bg.jpg')`,
-            filter: 'brightness(0.4) saturate(0.7)',
+            filter: 'brightness(0.65) saturate(1.2) sepia(0.15)',
           }}
           aria-hidden="true"
         />
 
-        {/* Gradient overlay */}
+        {/* Warm golden gradient overlay — amber/bronze tones, not black */}
         <div
-          className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60"
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(120,60,10,0.3) 0%, rgba(80,30,5,0.4) 50%, rgba(30,10,0,0.7) 100%)',
+          }}
           aria-hidden="true"
         />
 
