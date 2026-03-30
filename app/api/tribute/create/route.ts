@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     // Kick off AI generation pipeline via a separate internal endpoint.
     // waitUntil keeps the Vercel function alive after the HTTP response is
     // sent, so the generation pipeline isn't killed mid-flight.
-    const generateUrl = `${process.env.NEXT_PUBLIC_URL}/api/tribute/generate`
+    const generateUrl = `${process.env.NEXT_PUBLIC_URL}/api/generate-tribute`
     waitUntil(
       fetch(generateUrl, {
         method: 'POST',
