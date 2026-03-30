@@ -154,10 +154,18 @@ export async function generateTribute(tributeId: string): Promise<void> {
 
     // Step 8: Send "tribute ready" email if creator_email is set
     if (tribute.creator_email) {
+      // Resolve the hero photo URL so the email can show the tribute photo.
+      // heroPhotoIndex was just written to the DB — use it from photoAnalysis.
+      const heroIdx = photoAnalysis?.heroPhotoIndex ?? 0
+      const heroPhoto = photos[heroIdx] || photos[0]
+
       await sendTributeReadyEmail({
         to: tribute.creator_email,
         subjectName: tribute.subject_name,
         tributeSlug: tribute.slug,
+        // Pass the CDN URL; buildEmailPhotoUrl (in lib/email/send.ts) will
+        // append Supabase image-transform params to normalise EXIF orientation.
+        heroPhotoUrl: heroPhoto?.cdn_url,
       })
     }
 

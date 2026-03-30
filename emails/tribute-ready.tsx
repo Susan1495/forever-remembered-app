@@ -39,10 +39,21 @@ export function TributeReadyEmail({
           {/* Hero photo if available */}
           {heroPhotoUrl && (
             <Section style={heroSection}>
+              {/*
+               * width="480" caps the rendered width in email clients that
+               * honour the HTML attribute. height is intentionally omitted
+               * so the client preserves the image's natural aspect ratio —
+               * ensuring portrait photos display as portrait.
+               *
+               * The src URL must be EXIF-normalised before reaching here
+               * (see buildEmailPhotoUrl in lib/email/send.ts) because email
+               * clients do not read EXIF orientation tags; without that
+               * normalisation, a portrait mobile photo would render landscape.
+               */}
               <Img
                 src={heroPhotoUrl}
                 alt={`${subjectName}'s tribute`}
-                width="400"
+                width="480"
                 style={heroImage}
               />
             </Section>
@@ -125,12 +136,26 @@ const heroSection = {
   overflow: 'hidden',
 }
 
+/**
+ * Email-safe image styles.
+ *
+ * Key constraints for email clients:
+ * - width="480" attribute on <Img> caps the render width; combined with
+ *   style width:100% it scales down on narrow viewports without ever
+ *   going wider than 480px.
+ * - height="auto" / no fixed height → the image keeps its natural aspect
+ *   ratio, so a portrait photo stays portrait.
+ * - objectFit is intentionally omitted — it's unsupported in email clients
+ *   and was previously masking orientation/sizing bugs.
+ * - EXIF orientation is normalised server-side before the URL reaches here
+ *   (see lib/email/send.ts → buildEmailPhotoUrl), so the pixels already
+ *   reflect the correct orientation; we don't need any CSS rotation.
+ */
 const heroImage = {
   width: '100%',
   maxWidth: '480px',
   height: 'auto',
   display: 'block',
-  objectFit: 'cover' as const,
 }
 
 const headerSection = {
