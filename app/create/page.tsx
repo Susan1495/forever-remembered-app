@@ -244,6 +244,8 @@ export default function CreatePage() {
             onPhotosChange={photos => updateForm({ photos })}
             extraContext={form.extraContext}
             onExtraContextChange={v => updateForm({ extraContext: v })}
+            creatorEmail={form.creatorEmail}
+            onCreatorEmailChange={v => updateForm({ creatorEmail: v })}
             onSubmit={handleSubmit}
             onBack={goBack}
             isSubmitting={isSubmitting}

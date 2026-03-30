@@ -107,7 +107,16 @@ export async function POST(req: NextRequest) {
           'x-internal-secret': process.env.INTERNAL_SECRET!,
         },
         body: JSON.stringify({ tributeId: tribute.id }),
-      }).catch(err => console.error('[create] Failed to kick off generation:', err))
+      })
+        .then(async res => {
+          if (!res.ok) {
+            const body = await res.text().catch(() => '(no body)')
+            console.error(
+              `[create] generate-tribute returned ${res.status} for ${tribute.id}: ${body}`
+            )
+          }
+        })
+        .catch(err => console.error('[create] Failed to kick off generation:', err))
     )
 
     const response: CreateTributeResponse = {

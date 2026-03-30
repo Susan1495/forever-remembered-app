@@ -20,6 +20,8 @@ interface PhotoUploaderProps {
   onPhotosChange: (photos: UploadedPhoto[]) => void
   extraContext: string
   onExtraContextChange: (value: string) => void
+  creatorEmail: string
+  onCreatorEmailChange: (value: string) => void
   onSubmit: () => void
   onBack: () => void
   isSubmitting: boolean
@@ -31,6 +33,8 @@ export function PhotoUploader({
   onPhotosChange,
   extraContext,
   onExtraContextChange,
+  creatorEmail,
+  onCreatorEmailChange,
   onSubmit,
   onBack,
   isSubmitting,
@@ -235,6 +239,24 @@ export function PhotoUploader({
           rows={2}
           className="w-full text-base font-serif text-brown-900 bg-amber-50/30 border border-brown-200 focus:border-amber-500 outline-none rounded-xl px-4 py-3 transition-colors resize-none"
           style={{ fontSize: '16px' }}
+        />
+      </div>
+
+      {/* Email capture */}
+      <div>
+        <div className="h-px bg-brown-100 my-4" />
+        <label className="block text-xs text-brown-400 mb-2">
+          Email address <span className="italic">(optional — we&apos;ll send you the link when it&apos;s ready)</span>
+        </label>
+        <input
+          type="email"
+          value={creatorEmail}
+          onChange={e => onCreatorEmailChange(e.target.value)}
+          placeholder="your@email.com"
+          className="w-full text-base font-serif text-brown-900 bg-amber-50/30 border border-brown-200 focus:border-amber-500 outline-none rounded-xl px-4 py-3 transition-colors"
+          style={{ fontSize: '16px' }}
+          autoComplete="email"
+          inputMode="email"
         />
       </div>
 
