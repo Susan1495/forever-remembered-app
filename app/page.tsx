@@ -26,7 +26,7 @@ export default function LandingPage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('/images/hero-bg.jpg')`,
-            filter: 'brightness(0.65) saturate(1.2) sepia(0.15)',
+            filter: 'brightness(0.75) saturate(1.1)',
           }}
           aria-hidden="true"
         />
