@@ -33,23 +33,24 @@ interface FulfillmentDeliveryEmailProps {
 }
 
 const TIER_TITLES: Record<string, string> = {
-  keep: 'Your Memorial PDF is Ready',
-  cherish: 'Your Memorial Book is Ready',
-  legacy: 'Your Legacy Package is Ready',
+  keep: 'Your Memorial Book is Ready',
+  cherish: 'Your Premium Memorial Book is Ready',
+  legacy: 'Your Legacy Collection is Ready',
 }
 
 const TIER_INTROS: Record<string, string> = {
-  keep: "Your memorial PDF for {name} has been lovingly prepared. Click below to download and keep it forever.",
-  cherish: "Your memorial book for {name} is ready. We've prepared a beautiful PDF you can download, print, and share.",
+  keep: "Your memorial book for {name} has been lovingly prepared. Click below to download and keep it forever.",
+  cherish:
+    "Your premium 8-page memorial book for {name} is ready — beautifully designed with photos, tribute text, and a warm amber layout crafted to honour their memory. Download it to print, frame, or share with family.",
   legacy:
-    "Your complete legacy package for {name} is ready. Below you'll find download links for your memorial book and print-ready files.",
+    "Your Legacy Collection for {name} is ready. We've prepared your full 8-page premium memorial book plus a print-ready edition — formatted for professional printing at FedEx, Staples, or your local print shop.",
 }
 
 const TIER_PRINT_NOTE: Record<string, string | null> = {
   keep: null,
   cherish: null,
   legacy:
-    "Your print-ready files are formatted at 8.5×11\" for professional printing. We recommend services like FedEx Print, Staples, or a local print shop for the best results. Ask for matte or gloss coated paper for a beautiful finish.",
+    "Your print-ready PDF is formatted at A4 for professional printing. We recommend services like FedEx Print, Staples, or a local print shop for the best results. Ask for matte or gloss coated paper for a beautiful finish.",
 }
 
 export function FulfillmentDeliveryEmail({

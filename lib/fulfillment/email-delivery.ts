@@ -34,9 +34,9 @@ export async function sendFulfillmentEmail(options: SendFulfillmentEmailOptions)
   const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}`
 
   const TIER_SUBJECTS: Record<string, string> = {
-    keep: `Your memorial PDF for ${options.subjectName} is ready ✨`,
-    cherish: `Your memorial book for ${options.subjectName} is ready ✨`,
-    legacy: `Your legacy package for ${options.subjectName} is ready ✨`,
+    keep: `Your memorial book for ${options.subjectName} is ready ✨`,
+    cherish: `Your premium memorial book for ${options.subjectName} is ready — 8 pages, beautifully designed ✨`,
+    legacy: `Your Legacy Collection for ${options.subjectName} is ready — premium book + print-ready files ✨`,
   }
 
   try {

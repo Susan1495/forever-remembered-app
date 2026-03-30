@@ -665,6 +665,7 @@ ${page8}
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+
 // ── Browser launcher (Vercel-compatible) ─────────────────────────────────────
 
 /**
@@ -674,8 +675,9 @@ ${page8}
  *
  * Detection: VERCEL env var is set to "1" by Vercel automatically.
  */
-async function launchBrowser() {
+async function launchBrowser(options: { deviceScaleFactor?: number } = {}) {
   const isVercel = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+  const dsf = options.deviceScaleFactor ?? 1
 
   if (isVercel) {
     // Vercel serverless: use @sparticuz/chromium (pre-built, Lambda-compatible)
@@ -684,7 +686,7 @@ async function launchBrowser() {
     const executablePath = await chromium.executablePath()
     return puppeteerCore.default.launch({
       args: chromium.args,
-      defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
+      defaultViewport: { width: 1280, height: 800, deviceScaleFactor: dsf },
       executablePath,
       headless: 'shell',
     })
@@ -703,6 +705,8 @@ async function launchBrowser() {
     })
   }
 }
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Generate a 1-page portrait memorial card PDF (Keep tier, $39)
@@ -744,15 +748,35 @@ export async function generateMemorialCard(
   }
 }
 
+export interface GenerateMemorialBookOptions {
+  /**
+   * When true, generates a print-optimised variant:
+   *   - Higher device-pixel-ratio (deviceScaleFactor=2) for sharper asset rendering
+   *   - Tagged PDF metadata for downstream print services
+   *
+   * Note: Chrome renders at screen resolution internally; deviceScaleFactor=2
+   * sharpens rasterised images. For true 300 dpi output, professional print
+   * services (FedEx, Staples) will up-sample from the A4 PDF geometry correctly.
+   */
+  printReady?: boolean
+}
+
 /**
- * Generate an 8-page A4 memorial book PDF (Cherish tier, $127)
+ * Generate an 8-page A4 memorial book PDF (Cherish + Legacy tiers).
  * Returns a Buffer containing the PDF bytes.
+ *
+ * Pass `{ printReady: true }` for the Legacy tier to produce a print-optimised
+ * variant with higher device scale factor and PDF print metadata.
  */
 export async function generateMemorialBook(
   tribute: Tribute,
-  photos: TributePhoto[]
+  photos: TributePhoto[],
+  options: GenerateMemorialBookOptions = {}
 ): Promise<Buffer> {
-  const browser = await launchBrowser()
+  const { printReady = false } = options
+
+  // Print-ready variant uses deviceScaleFactor=2 for sharper rasterised assets
+  const browser = await launchBrowser({ deviceScaleFactor: printReady ? 2 : 1 })
 
   try {
     const page = await browser.newPage()
@@ -770,6 +794,12 @@ export async function generateMemorialBook(
       format: 'A4',
       printBackground: true,
       margin: { top: '0', bottom: '0', left: '0', right: '0' },
+      ...(printReady
+        ? {
+            tagged: true,
+            displayHeaderFooter: false,
+          }
+        : {}),
     })
 
     return Buffer.from(pdf)
