@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { waitUntil } from '@vercel/functions'
 import { createOrder } from '@/lib/db/orders'
 import { updateTribute, getTributeBySlug } from '@/lib/db/tributes'
 import { sendOrderConfirmationEmail } from '@/lib/email/send'
@@ -169,21 +170,20 @@ async function handleCheckoutSessionCompleted(
     })
   }
 
-  // 4. Trigger fulfillment pipeline (non-blocking — Stripe will retry on 500 if needed)
+  // 4. Trigger fulfillment pipeline
+  // waitUntil keeps the Vercel serverless function alive after the HTTP response
+  // is sent, allowing async fulfillment to complete without a race condition.
+  // On non-Vercel environments, this behaves like a normal fire-and-forget.
   console.log(`Triggering fulfillment for tier "${tier}" — order ${order.id}`)
-  // Run asynchronously so the webhook returns 200 quickly.
-  // Fulfillment failures are logged and the order is marked 'failed' in DB.
-  // Use runFulfillment (lib/fulfillment/index.ts) which routes:
-  //   keep    → tier1.ts  (Puppeteer memorial card PDF)
-  //   cherish → tier2.ts  (Puppeteer memorial card + 8-page book + QR code)
-  //   legacy  → trigger.ts (react-pdf print-ready files)
-  runFulfillment({
-    orderId: order.id,
-    tributeId,
-    tributeSlug,
-    tier,
-    customerEmail,
-  }).catch((err) => {
-    console.error(`Fulfillment pipeline error for order ${order.id}:`, err)
-  })
+  waitUntil(
+    runFulfillment({
+      orderId: order.id,
+      tributeId,
+      tributeSlug,
+      tier,
+      customerEmail,
+    }).catch((err) => {
+      console.error(`Fulfillment pipeline error for order ${order.id}:`, err)
+    })
+  )
 }
