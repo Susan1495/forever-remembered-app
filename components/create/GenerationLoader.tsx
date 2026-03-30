@@ -134,7 +134,7 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center px-5 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center" style={{ background: 'linear-gradient(135deg, #78350f 0%, #92400e 40%, #1c0a00 100%)' }}>
       {/* Animation */}
       <div className="mb-8 relative">
         {animationType === 'candle' && <CandleAnimation />}
