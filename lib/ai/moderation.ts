@@ -39,7 +39,7 @@ export async function moderateContent(
 
   const moderation = await openai.moderations.create({
     input: inputText,
-    model: 'text-moderation-latest',
+    model: 'omni-moderation-latest',
   })
 
   if (moderation.results[0].flagged) {
