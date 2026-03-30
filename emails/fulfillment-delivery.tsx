@@ -5,6 +5,7 @@
  * Used for Keep, Cherish, and Legacy tiers.
  */
 
+import React from 'react'
 import {
   Html,
   Head,

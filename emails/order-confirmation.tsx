@@ -3,6 +3,7 @@
  * Sent when Stripe checkout completes successfully
  */
 
+import React from 'react'
 import {
   Html,
   Head,

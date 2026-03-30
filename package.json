@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@react-email/components": "^1.0.10",
+    "@react-email/render": "^2.0.4",
     "@react-pdf/renderer": "^4.3.2",
     "@sparticuz/chromium": "^143.0.4",
     "@stripe/stripe-js": "^9.0.0",

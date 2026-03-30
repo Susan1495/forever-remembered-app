@@ -3,6 +3,7 @@
  * Sent when user captures their email in the upsell drawer
  */
 
+import React from 'react'
 import {
   Body,
   Button,

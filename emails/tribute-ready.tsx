@@ -3,6 +3,7 @@
  * Sent when generation completes and creator_email is on record
  */
 
+import React from 'react'
 import {
   Body,
   Button,
