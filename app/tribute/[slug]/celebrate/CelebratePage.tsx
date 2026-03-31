@@ -103,30 +103,31 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
       style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)' }}
     >
       {/* Hero area */}
-      <div className="relative overflow-hidden" style={{ minHeight: '320px' }}>
-        {/* Background warm gradient */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(180deg, #78350f 0%, #92400e 60%, #FFFBF5 100%)',
-            opacity: 0.9,
-          }}
-        />
-
-        {/* Hero photo — blurred/tinted overlay */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          minHeight: '320px',
+          background: 'linear-gradient(180deg, #78350f 0%, #92400e 60%, #FFFBF5 100%)',
+        }}
+      >
+        {/* Hero photo — blurred/tinted overlay (position:absolute so it never affects scroll height) */}
         {heroPhotoUrl && (
-          <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute inset-0 overflow-hidden"
+            aria-hidden="true"
+            style={{ pointerEvents: 'none' }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={heroPhotoUrl}
-              alt={`${tribute.subject_name}`}
+              alt=""
               className="w-full h-full object-cover"
               style={{ filter: 'blur(4px) brightness(0.4)', transform: 'scale(1.08)' }}
             />
           </div>
         )}
 
-        {/* Content over hero */}
+        {/* Content over hero — padding drives the height, not min-height on children */}
         <div className="relative z-10 flex flex-col items-center justify-center px-5 py-16 text-center">
           {/* Rose emoji */}
           <div className="text-5xl mb-5" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>

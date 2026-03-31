@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
   // Dynamically import Stripe to avoid breaking build when key is absent
   const Stripe = (await import('stripe')).default
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2026-03-25.dahlia' as const,
+    apiVersion: '2024-06-20' as const,
   })
 
   try {
