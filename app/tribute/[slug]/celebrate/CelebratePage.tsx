@@ -6,10 +6,14 @@
  * Shown immediately after tribute generation completes.
  * Emotionally warm, premium feel, NOT salesy.
  * Mobile-first design matching the Forever Remembered aesthetic.
+ *
+ * Design principle: fully static render — no useState that could trigger
+ * a re-render and cause mobile Safari to scroll-to-top.
+ * Checkout is handled by CheckoutButton (isolated client island).
  */
 
-import { useState } from 'react'
 import type { Tribute } from '@/lib/types'
+import { CheckoutButton } from './CheckoutButton'
 
 interface CelebratePageProps {
   tribute: Tribute
@@ -61,105 +65,101 @@ const TIERS = [
 ]
 
 export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
-  const [loadingTier, setLoadingTier] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
   const tributeUrl = `/tribute/${tribute.slug}`
-
-  const handleUpgrade = async (tierId: 'keep' | 'cherish' | 'legacy') => {
-    setLoadingTier(tierId)
-    setError(null)
-
-    try {
-      const res = await fetch('/api/checkout/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tributeSlug: tribute.slug, tier: tierId }),
-      })
-
-      const data = await res.json()
-
-      if (data.comingSoon) {
-        // Stripe not yet configured — fall through to tribute page
-        window.location.href = tributeUrl
-        return
-      }
-
-      if (data.url) {
-        window.location.href = data.url
-        return
-      }
-
-      throw new Error(data.error || 'Something went wrong')
-    } catch {
-      setError('Unable to start checkout. Please try again.')
-      setLoadingTier(null)
-    }
-  }
 
   return (
     <div
-      className="min-h-screen"
-      style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)', minHeight: '100vh' }}
     >
-      {/* Hero area */}
+      {/* Hero area — fully static, no JS */}
       <div
-        className="relative overflow-hidden"
         style={{
+          position: 'relative',
+          overflow: 'hidden',
           minHeight: '320px',
           background: 'linear-gradient(180deg, #78350f 0%, #92400e 60%, #FFFBF5 100%)',
         }}
       >
-        {/* Hero photo — blurred/tinted overlay (position:absolute so it never affects scroll height) */}
+        {/* Blurred bg photo — purely decorative, no layout impact */}
         {heroPhotoUrl && (
           <div
-            className="absolute inset-0 overflow-hidden"
             aria-hidden="true"
-            style={{ pointerEvents: 'none' }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              overflow: 'hidden',
+              pointerEvents: 'none',
+            }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={heroPhotoUrl}
               alt=""
-              className="w-full h-full object-cover"
-              style={{ filter: 'blur(4px) brightness(0.4)', transform: 'scale(1.08)' }}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                filter: 'blur(4px) brightness(0.4)',
+                transform: 'scale(1.08)',
+                display: 'block',
+              }}
             />
           </div>
         )}
 
-        {/* Content over hero — padding drives the height, not min-height on children */}
-        <div className="relative z-10 flex flex-col items-center justify-center px-5 py-16 text-center">
-          {/* Rose emoji */}
-          <div className="text-5xl mb-5" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+        {/* Hero content */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '64px 20px',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '20px', textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
             🌹
           </div>
 
           <h1
-            className="font-serif text-white text-3xl font-bold mb-3 leading-tight"
-            style={{ maxWidth: '480px', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+            className="font-serif"
+            style={{
+              color: '#fff',
+              fontSize: '28px',
+              fontWeight: 700,
+              lineHeight: 1.3,
+              maxWidth: '480px',
+              margin: '0 0 8px',
+              textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            }}
           >
             Your tribute for {tribute.subject_name} is ready
           </h1>
 
-          {/* Preview photo — circular, centered */}
+          {/* Circular photo — fixed size so no layout shift */}
           {heroPhotoUrl && (
             <div
-              className="mt-6 mb-2 overflow-hidden border-4 border-amber-200 shadow-xl"
               style={{
+                marginTop: '24px',
                 width: 120,
                 height: 120,
                 borderRadius: '50%',
+                overflow: 'hidden',
+                border: '4px solid rgba(253,230,138,0.8)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                flexShrink: 0,
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={heroPhotoUrl}
                 alt={tribute.subject_name}
-                className="w-full h-full object-cover"
                 width={120}
                 height={120}
-                style={{ display: 'block' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             </div>
           )}
@@ -167,154 +167,93 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
       </div>
 
       {/* Main content */}
-      <div className="max-w-2xl mx-auto px-5 py-10">
+      <div style={{ maxWidth: '672px', margin: '0 auto', padding: '40px 20px' }}>
         {/* Emotional copy */}
-        <div className="text-center mb-10">
-          <p
-            className="font-serif text-lg leading-relaxed mb-3"
-            style={{ color: '#3D2B14' }}
-          >
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <p className="font-serif" style={{ color: '#3D2B14', fontSize: '18px', lineHeight: 1.6, marginBottom: '12px' }}>
             Thousands of families have used Forever Remembered to honor their loved ones.
           </p>
-          <p
-            className="font-serif text-base leading-relaxed"
-            style={{ color: '#6B5A45' }}
-          >
+          <p className="font-serif" style={{ color: '#6B5A45', fontSize: '16px', lineHeight: 1.6 }}>
             Make this tribute last forever.
           </p>
         </div>
 
-        {/* Error message */}
-        {error && (
-          <div
-            className="text-center text-sm mb-6 py-3 px-4 rounded-xl"
-            style={{ background: '#FEF2F2', color: '#991B1B' }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* Tier cards */}
-        <div className="flex flex-col gap-4 md:flex-row md:gap-5 mb-10">
+        {/* Tier cards — each has its own isolated CheckoutButton client island */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
           {TIERS.map((tier) => (
-            <TierCard
+            <div
               key={tier.id}
-              tier={tier}
-              isLoading={loadingTier === tier.id}
-              disabled={loadingTier !== null}
-              onSelect={() => handleUpgrade(tier.id)}
-            />
+              style={{
+                borderRadius: '16px',
+                overflow: 'hidden',
+                border: tier.highlight ? '2px solid #D97706' : '1.5px solid #E8DDD0',
+                background: tier.highlight ? '#FFFBF5' : '#FFFFFF',
+                boxShadow: tier.highlight
+                  ? '0 8px 32px rgba(217,119,6,0.15)'
+                  : '0 2px 12px rgba(0,0,0,0.06)',
+              }}
+            >
+              {tier.badge && (
+                <div
+                  className="font-serif"
+                  style={{
+                    background: '#D97706',
+                    color: '#fff',
+                    textAlign: 'center',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    padding: '6px',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {tier.badge}
+                </div>
+              )}
+
+              <div style={{ padding: '20px 20px 24px' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 className="font-serif" style={{ color: '#1C1007', fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
+                    {tier.name}
+                  </h3>
+                  <div className="font-serif" style={{ color: tier.highlight ? '#D97706' : '#3D2B14', fontSize: '30px', fontWeight: 700, marginBottom: '4px' }}>
+                    {tier.price}
+                  </div>
+                  <p className="font-serif" style={{ color: '#6B5A45', fontSize: '14px' }}>
+                    {tier.tagline}
+                  </p>
+                </div>
+
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {tier.features.map((feature) => (
+                    <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <span style={{ color: '#D97706', fontWeight: 700, fontSize: '12px', marginTop: '2px', flexShrink: 0 }}>✓</span>
+                      <span className="font-serif" style={{ color: '#3D2B14', fontSize: '14px' }}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Isolated client island — state changes here don't affect scroll */}
+                <CheckoutButton
+                  tributeSlug={tribute.slug}
+                  tier={tier.id}
+                  label={`Choose ${tier.name}`}
+                  highlight={tier.highlight}
+                />
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Skip link */}
-        <div className="text-center pb-10">
+        {/* Skip link — plain anchor, no JS */}
+        <div style={{ textAlign: 'center', paddingBottom: '40px' }}>
           <a
             href={tributeUrl}
-            className="font-serif text-sm transition-colors"
-            style={{ color: '#9B8B78' }}
-            onMouseEnter={(e) => ((e.target as HTMLAnchorElement).style.color = '#6B5A45')}
-            onMouseLeave={(e) => ((e.target as HTMLAnchorElement).style.color = '#9B8B78')}
+            className="font-serif"
+            style={{ color: '#9B8B78', fontSize: '14px', textDecoration: 'none' }}
           >
             No thanks, just view the free tribute →
           </a>
         </div>
-      </div>
-    </div>
-  )
-}
-
-/* ——————————————————————————————————————————
-   Tier Card
-—————————————————————————————————————————— */
-
-interface TierCardProps {
-  tier: (typeof TIERS)[number]
-  isLoading: boolean
-  disabled: boolean
-  onSelect: () => void
-}
-
-function TierCard({ tier, isLoading, disabled, onSelect }: TierCardProps) {
-  return (
-    <div
-      className="relative flex flex-col rounded-2xl overflow-hidden flex-1"
-      style={{
-        border: tier.highlight ? '2px solid #D97706' : '1.5px solid #E8DDD0',
-        background: tier.highlight ? '#FFFBF5' : '#FFFFFF',
-        boxShadow: tier.highlight
-          ? '0 8px 32px rgba(217, 119, 6, 0.15)'
-          : '0 2px 12px rgba(0,0,0,0.06)',
-      }}
-    >
-      {/* Badge */}
-      {tier.badge && (
-        <div
-          className="absolute top-0 left-0 right-0 text-center text-xs font-serif font-semibold py-1.5"
-          style={{ background: '#D97706', color: '#FFFFFF', letterSpacing: '0.05em' }}
-        >
-          {tier.badge}
-        </div>
-      )}
-
-      <div className={`flex flex-col flex-1 px-5 py-6 ${tier.badge ? 'pt-10' : ''}`}>
-        {/* Tier name + price */}
-        <div className="mb-4">
-          <h3
-            className="font-serif font-bold text-xl mb-1"
-            style={{ color: '#1C1007' }}
-          >
-            {tier.name}
-          </h3>
-          <div
-            className="font-serif font-bold text-3xl mb-1"
-            style={{ color: tier.highlight ? '#D97706' : '#3D2B14' }}
-          >
-            {tier.price}
-          </div>
-          <p className="text-sm font-serif" style={{ color: '#6B5A45' }}>
-            {tier.tagline}
-          </p>
-        </div>
-
-        {/* Features */}
-        <ul className="flex flex-col gap-2 mb-6 flex-1">
-          {tier.features.map((feature) => (
-            <li key={feature} className="flex items-start gap-2">
-              <span
-                className="mt-0.5 flex-shrink-0 text-xs font-bold"
-                style={{ color: '#D97706' }}
-              >
-                ✓
-              </span>
-              <span className="text-sm font-serif" style={{ color: '#3D2B14' }}>
-                {feature}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA button */}
-        <button
-          onClick={onSelect}
-          disabled={disabled}
-          className="w-full font-serif font-semibold rounded-full py-3 text-base transition-all"
-          style={{
-            background: tier.highlight ? '#D97706' : '#3D2B14',
-            color: '#FFFFFF',
-            opacity: disabled && !isLoading ? 0.6 : 1,
-            cursor: disabled ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Starting…
-            </span>
-          ) : (
-            `Choose ${tier.name}`
-          )}
-        </button>
       </div>
     </div>
   )
