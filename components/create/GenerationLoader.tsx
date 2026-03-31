@@ -8,7 +8,7 @@
  * - Auto-redirects when published
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 const MESSAGES = [
@@ -27,7 +27,8 @@ interface GenerationLoaderProps {
 export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) {
   const router = useRouter()
   const [messageIdx, setMessageIdx] = useState(0)
-  const [failedPolls, setFailedPolls] = useState(0)
+  // Use a ref for failedPolls to avoid stale closure issues in the polling loop
+  const failedPollsRef = useRef(0)
   const [showEmailCapture, setShowEmailCapture] = useState(false)
   const [email, setEmail] = useState('')
   const [emailSubmitted, setEmailSubmitted] = useState(false)
@@ -63,7 +64,7 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
     }
   }, [elapsedSeconds])
 
-  // Poll status
+  // Poll status — failedPolls is a ref so this callback is stable
   const checkStatus = useCallback(async () => {
     try {
       const res = await fetch(`/api/tribute/${slug}/status`, {
@@ -71,14 +72,18 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
       })
 
       if (!res.ok) {
-        setFailedPolls(f => f + 1)
+        failedPollsRef.current += 1
+        // After 3 consecutive failures, show email capture
+        if (failedPollsRef.current >= 3) {
+          setShowEmailCapture(true)
+        }
         return
       }
 
       const { status } = await res.json()
 
       if (status === 'published') {
-        // Redirect to celebrate interstitial — catches creator at peak emotion
+        // Always redirect when published — even if emailSubmitted confirmation is showing
         router.replace(`/tribute/${slug}/celebrate`)
         return
       }
@@ -89,32 +94,34 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
       }
 
       // Still processing — reset failed polls
-      setFailedPolls(0)
+      failedPollsRef.current = 0
     } catch {
-      setFailedPolls(f => f + 1)
+      failedPollsRef.current += 1
+      // After 3 consecutive failures, show email capture
+      if (failedPollsRef.current >= 3) {
+        setShowEmailCapture(true)
+      }
     }
+  }, [slug, router])
 
-    // After 3 consecutive failures, show email capture
-    if (failedPolls >= 3) {
-      setShowEmailCapture(true)
-    }
-  }, [slug, router, failedPolls])
-
-  // Start polling
+  // Start polling — interval adapts based on failedPollsRef
   useEffect(() => {
     // Initial check
     checkStatus()
 
-    // Poll every 3 seconds with exponential backoff after failures
-    const getInterval = () => {
-      if (failedPolls >= 10) return 15000
-      if (failedPolls >= 5) return 5000
-      return 3000
+    const scheduleNext = () => {
+      const failed = failedPollsRef.current
+      const delay = failed >= 10 ? 15000 : failed >= 5 ? 5000 : 3000
+      return setTimeout(() => {
+        checkStatus()
+        scheduleNext()
+      }, delay)
     }
 
-    const timeout = setTimeout(checkStatus, getInterval())
+    const timeout = scheduleNext()
     return () => clearTimeout(timeout)
-  }, [checkStatus, failedPolls])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkStatus])
 
   // Re-check status when user returns to tab (e.g. backgrounded on mobile)
   useEffect(() => {
@@ -215,9 +222,16 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
       {emailSubmitted && (
         <div>
           <p className="font-serif text-white text-lg mb-2">✓ We&apos;ll send it to you.</p>
-          <p className="text-white/60 text-sm font-serif">
+          <p className="text-white/60 text-sm font-serif mb-5">
             Check your inbox in a few minutes.
           </p>
+          {/* Manual navigation fallback — in case polling doesn't fire the redirect */}
+          <a
+            href={`/tribute/${slug}/celebrate`}
+            className="font-serif text-amber-400 hover:text-amber-300 text-sm transition-colors underline-offset-2 hover:underline"
+          >
+            View your tribute →
+          </a>
         </div>
       )}
     </div>

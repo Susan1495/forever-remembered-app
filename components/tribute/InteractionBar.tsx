@@ -15,6 +15,8 @@ interface InteractionBarProps {
   onShare?: () => void
   /** Called after a visitor successfully lights a candle */
   onCandleLight?: () => void
+  /** Called when the Preserve pill is tapped — opens the upsell drawer */
+  onPreserve?: () => void
 }
 
 export function InteractionBar({
@@ -23,6 +25,7 @@ export function InteractionBar({
   subjectName,
   onShare,
   onCandleLight,
+  onPreserve,
 }: InteractionBarProps) {
   const [candleCount, setCandleCount] = useState(initialCandleCount)
   const [candleLit, setCandleLit] = useState(false)
@@ -136,6 +139,17 @@ export function InteractionBar({
           <span style={{ fontSize: '18px' }}>📤</span>
           <span className="text-sm font-medium">Share</span>
         </button>
+
+        {/* Preserve pill — opens upsell drawer */}
+        {onPreserve && (
+          <button
+            onClick={onPreserve}
+            className="flex-shrink-0 bg-amber-600 text-white rounded-full text-xs px-3 py-1.5 font-serif transition-colors hover:bg-amber-700 active:scale-95"
+            aria-label="Preserve this tribute"
+          >
+            🕯️ Preserve
+          </button>
+        )}
       </div>
     </div>
   )

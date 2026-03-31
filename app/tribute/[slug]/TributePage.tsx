@@ -250,6 +250,7 @@ export function TributePage({
         subjectName={tribute.subject_name}
         onShare={handleShare}
         onCandleLight={handleCandleLight}
+        onPreserve={!orderSuccess ? triggerUpsell : undefined}
       />
 
       {/* Upsell drawer */}
