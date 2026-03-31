@@ -19,7 +19,8 @@ const testTribute: Tribute = {
   ai_body: { opening: 'Margaret was beloved by all.', life: 'She taught for 30 years.', legacy: 'Her love lives on.', closing: 'We remember her always.' },
   ai_themes: ['family'], hero_photo_idx: 0, template_id: 'golden-hour',
   ai_photo_captions: null, status: 'published', view_count: 0, candle_count: 0,
-  created_at: new Date().toISOString(), published_at: new Date().toISOString(), expires_at: null,
+  created_at: new Date().toISOString(), published_at: new Date().toISOString(),
+  generated_at: new Date().toISOString(), expires_at: null,
   tier: 'keep', custom_subdomain: null
 }
 const photos: TributePhoto[] = []

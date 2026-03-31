@@ -140,6 +140,7 @@ export async function generateTribute(tributeId: string): Promise<void> {
     }
 
     // Step 7: Update tribute record with all AI output
+    const now = new Date().toISOString()
     await updateTribute(tributeId, {
       ai_headline: tributeText.headline,
       ai_pull_quote: tributeText.pullQuote,
@@ -149,7 +150,8 @@ export async function generateTribute(tributeId: string): Promise<void> {
       hero_photo_idx: photoAnalysis?.heroPhotoIndex || 0,
       template_id: templateId,
       status: 'published',
-      published_at: new Date().toISOString(),
+      published_at: now,
+      generated_at: now,
     })
 
     // Step 8: Send "tribute ready" email if creator_email is set
@@ -211,6 +213,7 @@ async function generateFallbackTribute(tributeId: string): Promise<void> {
     subject_age_group: tribute.subject_age_group,
   })
 
+  const now = new Date().toISOString()
   await updateTribute(tributeId, {
     ai_headline: tributeText.headline,
     ai_pull_quote: tributeText.pullQuote,
@@ -218,7 +221,8 @@ async function generateFallbackTribute(tributeId: string): Promise<void> {
     ai_themes: ['gentle'],
     template_id: 'golden-hour',
     status: 'published',
-    published_at: new Date().toISOString(),
+    published_at: now,
+    generated_at: now,
   })
 }
 

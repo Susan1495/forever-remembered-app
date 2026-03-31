@@ -74,6 +74,7 @@ async function main() {
       candle_count: 0,
       created_at: new Date().toISOString(),
       published_at: new Date().toISOString(),
+      generated_at: new Date().toISOString(),
       expires_at: null,
       tier: 'keep',
       custom_subdomain: null,

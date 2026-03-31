@@ -69,7 +69,7 @@ export async function sendTributeReadyEmail(options: {
   const heroPhotoUrl = buildEmailPhotoUrl(options.heroPhotoUrl)
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: `Forever Remembered <${FROM}>`,
       to: options.to,
       replyTo: 'support@foreverremembered.ai',
@@ -80,8 +80,27 @@ export async function sendTributeReadyEmail(options: {
         heroPhotoUrl,
       }),
     })
+
+    if ('error' in result && result.error) {
+      // Resend returns errors as { error: { statusCode, name, message } } in some SDK versions
+      const err = result.error as { statusCode?: number; name?: string; message?: string }
+      if (err.statusCode === 403 || err.name === 'validation_error') {
+        console.error(
+          `[email] Domain not verified — tribute ready email could NOT be sent to ${options.to}.` +
+          ` Verify the ${FROM.split('@')[1]} domain at https://resend.com/domains to enable email delivery.` +
+          ` tribute=${options.tributeSlug} error=${err.message}`
+        )
+      } else {
+        console.error(`[email] Resend error for ${options.to} tribute=${options.tributeSlug}:`, result.error)
+      }
+      return
+    }
+
+    if ('data' in result && result.data?.id) {
+      console.log(`[email] Tribute ready email sent to ${options.to} — id=${result.data.id} tribute=${options.tributeSlug}`)
+    }
   } catch (error) {
-    console.error('Failed to send tribute ready email:', error)
+    console.error(`[email] Failed to send tribute ready email to ${options.to} tribute=${options.tributeSlug}:`, error)
     // Don't throw — email failure shouldn't break the generation pipeline
   }
 }
