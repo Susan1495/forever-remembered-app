@@ -91,6 +91,27 @@ export function TributeReadyEmail({
 
             <Hr style={divider} />
 
+            {/* Share with family section */}
+            <Section style={shareSectionStyle}>
+              <Text style={shareHeadingStyle}>Share with family</Text>
+              <Text style={shareIntroText}>
+                We wrote something you can send right now:
+              </Text>
+              <Section style={shareQuoteBox}>
+                <Text style={shareQuoteText}>
+                  &ldquo;I just created a tribute for {subjectName} and wanted you to see it.
+                  Take a moment &mdash;{' '}
+                  <Link href={tributeUrl} style={shareLinkStyle}>
+                    {tributeUrl}
+                  </Link>
+                  &rdquo;
+                </Text>
+              </Section>
+              <Text style={shareFootnoteText}>(Feel free to make it your own.)</Text>
+            </Section>
+
+            <Hr style={divider} />
+
             {/* Soft upsell section */}
             <Section style={upsellSection}>
               <Text style={upsellHeading}>Want to preserve this forever?</Text>
@@ -250,6 +271,55 @@ const upsellButtonStyle = {
   fontWeight: '600',
   padding: '12px 24px',
   textDecoration: 'none',
+}
+
+// Share with family section styles
+const shareSectionStyle = {
+  marginBottom: '0',
+}
+
+const shareHeadingStyle = {
+  color: '#1C1007',
+  fontSize: '16px',
+  fontFamily: 'Georgia, serif',
+  fontWeight: '700',
+  margin: '0 0 10px',
+}
+
+const shareIntroText = {
+  color: '#3D2B14',
+  fontSize: '14px',
+  lineHeight: '1.6',
+  margin: '0 0 12px',
+}
+
+const shareQuoteBox = {
+  backgroundColor: '#FFFBF5',
+  border: '1px solid #F0E8DC',
+  borderRadius: '12px',
+  padding: '20px',
+  margin: '0 0 12px',
+}
+
+const shareQuoteText = {
+  color: '#92400e',
+  fontSize: '15px',
+  fontFamily: 'Georgia, serif',
+  fontStyle: 'italic',
+  lineHeight: '1.65',
+  margin: '0',
+}
+
+const shareLinkStyle = {
+  color: '#92400e',
+  textDecoration: 'underline',
+}
+
+const shareFootnoteText = {
+  color: '#9B8B78',
+  fontSize: '13px',
+  fontStyle: 'italic',
+  margin: '0',
 }
 
 const footerSection = {

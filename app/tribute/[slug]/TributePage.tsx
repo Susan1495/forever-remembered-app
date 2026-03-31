@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react'
 import { HeroSection } from '@/components/tribute/HeroSection'
 import { StorySection } from '@/components/tribute/StorySection'
+import { ShareSection } from '@/components/tribute/ShareSection'
 import { PhotoGallery } from '@/components/tribute/PhotoGallery'
 import { InteractionBar } from '@/components/tribute/InteractionBar'
 import { UpsellDrawer } from '@/components/tribute/UpsellDrawer'
@@ -147,6 +148,9 @@ export function TributePage({
         body={tribute.ai_body}
         pullQuote={tribute.ai_pull_quote}
       />
+
+      {/* Share buttons */}
+      <ShareSection slug={tribute.slug} subjectName={tribute.subject_name} />
 
       {/* Photo gallery (excludes hero photo) */}
       <PhotoGallery
