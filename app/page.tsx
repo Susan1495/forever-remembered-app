@@ -8,9 +8,9 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Forever Remembered — Create a free tribute for someone you love',
+  title: 'Free AI Memorial Tribute Creator — Forever Remembered',
   description:
-    "Upload a few photos. Write a few sentences. In under 2 minutes, we'll create a beautiful tribute page you can share with everyone who loved them. Free, always.",
+    'Create a beautiful tribute page for someone you love in under 2 minutes. Free AI memorial tribute creator — just upload photos and write a few words.',
 }
 
 export default function LandingPage() {
@@ -342,6 +342,73 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      {/* ============================================================
+          SEO LANDING SECTION
+          Keyword-targeted content for organic search
+          ============================================================ */}
+      <section
+        id="about-forever-remembered"
+        className="bg-amber-50/30 px-5 py-16 md:py-20 border-t border-amber-100"
+        aria-label="About Forever Remembered"
+      >
+        <div className="max-w-2xl mx-auto">
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-brown-900 mb-8 leading-snug">
+            The easiest way to create a tribute page for someone you love
+          </h2>
+
+          <div className="space-y-6 font-serif text-brown-700 leading-relaxed text-base">
+            <p>
+              Forever Remembered is a free AI memorial tribute creator that turns your photos and
+              memories into a beautiful online tribute page in minutes. Our AI tribute generator
+              reads what you share — a name, a few sentences, a handful of photos — and crafts a
+              full tribute: a biography written in their voice, a gallery that honors their life,
+              and a page worthy of who they were. No design skills needed. No writing experience
+              required. Just the love you already have.
+            </p>
+
+            <p>
+              This free tribute page for your loved one is for anyone who has lost someone and
+              wants the world to know them — not just the dates on a headstone, but the
+              full person. The parent who made every house a home. The friend who always picked up
+              the phone. The grandparent whose stories you wish you had recorded. Our online
+              memorial page creator gives anyone, anywhere, a way to share that person with
+              everyone who mattered to them — across families, time zones, and generations.
+            </p>
+
+            <p>
+              Forever Remembered is, and will always be, free to create. We believe every family
+              deserves a place to remember someone they love — not just those who can afford a
+              fancy memorial site. When you share your tribute, others who open it and feel
+              something may create one too. That&apos;s how this stays free: not through ads, but
+              through people taking care of each other. Every tribute shared is a ripple — and
+              it&apos;s how grieving families find us when they need us most.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'Forever Remembered',
+            description:
+              'Free AI memorial tribute creator. Create a beautiful tribute page for someone you love in under 2 minutes — just upload photos and write a few words.',
+            url: 'https://foreverremembered.ai',
+            applicationCategory: 'LifestyleApplication',
+            operatingSystem: 'Any',
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+            },
+          }),
+        }}
+      />
     </main>
   )
 }
