@@ -69,56 +69,50 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
     <div
       style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)', paddingBottom: '60px' }}
     >
-      {/* Hero area — fully static, no JS */}
+      {/* Hero area — FIXED height so no layout shift on mobile Safari */}
       <div
         style={{
           position: 'relative',
+          height: '340px',         /* fixed — never changes when images load */
           overflow: 'hidden',
-          minHeight: '320px',
           background: 'linear-gradient(180deg, #78350f 0%, #92400e 60%, #FFFBF5 100%)',
         }}
       >
-        {/* Blurred bg photo — purely decorative, no layout impact */}
+        {/* Blurred bg photo — absolute, purely decorative, zero layout impact */}
         {heroPhotoUrl && (
-          <div
+          <img
+            src={heroPhotoUrl}
+            alt=""
             aria-hidden="true"
             style={{
               position: 'absolute',
               inset: 0,
-              overflow: 'hidden',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: 'blur(4px) brightness(0.4)',
+              transform: 'scale(1.08)',
+              display: 'block',
               pointerEvents: 'none',
             }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={heroPhotoUrl}
-              alt=""
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                filter: 'blur(4px) brightness(0.4)',
-                transform: 'scale(1.08)',
-                display: 'block',
-              }}
-            />
-          </div>
+          />
         )}
 
-        {/* Hero content */}
+        {/* Hero content — centered inside fixed-height container */}
         <div
           style={{
-            position: 'relative',
-            zIndex: 10,
+            position: 'absolute',
+            inset: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '64px 20px',
+            padding: '0 20px',
             textAlign: 'center',
+            zIndex: 10,
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '20px', textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px', textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
             🌹
           </div>
 
@@ -126,28 +120,27 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
             className="font-serif"
             style={{
               color: '#fff',
-              fontSize: '28px',
+              fontSize: '24px',
               fontWeight: 700,
               lineHeight: 1.3,
-              maxWidth: '480px',
-              margin: '0 0 8px',
+              maxWidth: '320px',
+              margin: '0 0 16px',
               textShadow: '0 2px 8px rgba(0,0,0,0.4)',
             }}
           >
             Your tribute for {tribute.subject_name} is ready
           </h1>
 
-          {/* Circular photo — fixed size so no layout shift */}
+          {/* Circular photo — fixed size, absolutely no layout contribution */}
           {heroPhotoUrl && (
             <div
               style={{
-                marginTop: '24px',
-                width: 120,
-                height: 120,
+                width: 96,
+                height: 96,
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: '4px solid rgba(253,230,138,0.8)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                border: '3px solid rgba(253,230,138,0.8)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
                 flexShrink: 0,
               }}
             >
@@ -155,8 +148,6 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
               <img
                 src={heroPhotoUrl}
                 alt={tribute.subject_name}
-                width={120}
-                height={120}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             </div>
