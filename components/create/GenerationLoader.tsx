@@ -3,9 +3,9 @@
 /**
  * Screen 3: Generation loading screen
  * - Animated candle (or theme-appropriate animation)
- * - Rotating text messages
+ * - Email capture shown IMMEDIATELY so user has time to enter it
  * - Polls /api/tribute/[slug]/status every 3 seconds
- * - Auto-redirects when published
+ * - Only redirects after email is submitted (or skipped)
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -27,14 +27,12 @@ interface GenerationLoaderProps {
 export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) {
   const router = useRouter()
   const [messageIdx, setMessageIdx] = useState(0)
-  // Use a ref for failedPolls to avoid stale closure issues in the polling loop
   const failedPollsRef = useRef(0)
-  const [showEmailCapture, setShowEmailCapture] = useState(false)
+  const tributeReadyRef = useRef(false) // tracks if tribute is published
   const [email, setEmail] = useState('')
   const [emailSubmitted, setEmailSubmitted] = useState(false)
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [emailSkipped, setEmailSkipped] = useState(false)
 
-  // Choose animation type based on relationship
   const animationType = relationship?.toLowerCase().includes('pet')
     ? 'paw'
     : relationship?.toLowerCase().includes('child') || relationship?.toLowerCase().includes('baby')
@@ -49,106 +47,65 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
     return () => clearInterval(interval)
   }, [])
 
-  // Track elapsed time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedSeconds(s => s + 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [])
+  // Navigate to celebrate page
+  const goToCelebrate = useCallback(() => {
+    router.replace(`/tribute/${slug}/celebrate`)
+  }, [router, slug])
 
-  // Show email capture after 10 seconds
-  useEffect(() => {
-    if (elapsedSeconds >= 10) {
-      setShowEmailCapture(true)
-    }
-  }, [elapsedSeconds])
-
-  // Poll status — failedPolls is a ref so this callback is stable
-  const checkStatus = useCallback(async (opts?: { showEmail?: boolean; submitted?: boolean }) => {
-    const emailVisible = opts?.showEmail ?? showEmailCapture
-    const alreadySubmitted = opts?.submitted ?? emailSubmitted
+  // Poll tribute status
+  const checkStatus = useCallback(async () => {
     try {
-      const res = await fetch(`/api/tribute/${slug}/status`, {
-        cache: 'no-store',
-      })
-
+      const res = await fetch(`/api/tribute/${slug}/status`, { cache: 'no-store' })
       if (!res.ok) {
         failedPollsRef.current += 1
-        // After 3 consecutive failures, show email capture
-        if (failedPollsRef.current >= 3) {
-          setShowEmailCapture(true)
-        }
         return
       }
-
       const { status } = await res.json()
-
       if (status === 'published') {
-        // If email form is visible but not yet submitted, wait — give user time to enter email.
-        // Once submitted (or if form was never shown), redirect immediately.
-        if (emailVisible && !alreadySubmitted) {
-          // Tribute is ready — don't redirect yet, user is filling in email.
-          // The amber "View your tribute →" button gives them a manual escape hatch.
-          return
+        tributeReadyRef.current = true
+        // Only redirect if user has submitted or skipped email
+        if (emailSubmitted || emailSkipped) {
+          goToCelebrate()
         }
-        router.replace(`/tribute/${slug}/celebrate`)
-        return
+        // Otherwise wait — user is filling in their email
+      } else if (status === 'failed') {
+        // Still show the form — let them submit email then see tribute
+      } else {
+        failedPollsRef.current = 0
       }
-
-      if (status === 'failed') {
-        setShowEmailCapture(true)
-        return
-      }
-
-      // Still processing — reset failed polls
-      failedPollsRef.current = 0
     } catch {
       failedPollsRef.current += 1
-      // After 3 consecutive failures, show email capture
-      if (failedPollsRef.current >= 3) {
-        setShowEmailCapture(true)
-      }
     }
-  }, [slug, router, showEmailCapture, emailSubmitted])
+  }, [slug, emailSubmitted, emailSkipped, goToCelebrate])
 
-  // Start polling — interval adapts based on failedPollsRef
+  // Start polling
   useEffect(() => {
-    // Initial check
     checkStatus()
-
     const scheduleNext = () => {
       const failed = failedPollsRef.current
       const delay = failed >= 10 ? 15000 : failed >= 5 ? 5000 : 3000
-      return setTimeout(() => {
-        checkStatus()
-        scheduleNext()
-      }, delay)
+      return setTimeout(() => { checkStatus(); scheduleNext() }, delay)
     }
-
     const timeout = scheduleNext()
     return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkStatus])
 
-  // Re-check status when user returns to tab (e.g. backgrounded on mobile)
+  // Re-check on tab focus (mobile backgrounding)
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkStatus()
-      }
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') checkStatus()
     }
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [checkStatus])
 
-  // Handle browser back button
+  // Warn before leaving
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault()
-      e.returnValue = "Your tribute is being created — are you sure you want to leave? We'll email you the link when it's ready."
+      e.returnValue = "Your tribute is being created — are you sure you want to leave?"
     }
-
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
@@ -162,18 +119,27 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
         body: JSON.stringify({ email }),
       })
     } catch {
-      // Non-fatal — still show confirmation to user
-      console.error('Failed to save email to server')
+      console.error('Failed to save email')
     }
-    // Keep local copy as fallback
     localStorage.setItem(`tribute-email-${slug}`, email)
     setEmailSubmitted(true)
-    // Now that email is saved, redirect to celebrate page immediately
-    router.replace(`/tribute/${slug}/celebrate`)
+    // Redirect immediately — tribute may already be ready
+    goToCelebrate()
+  }
+
+  const handleSkip = () => {
+    setEmailSkipped(true)
+    if (tributeReadyRef.current) {
+      goToCelebrate()
+    }
+    // If not ready yet, polling will redirect when it finishes
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center" style={{ background: 'linear-gradient(135deg, #78350f 0%, #92400e 40%, #1c0a00 100%)' }}>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-5 text-center"
+      style={{ background: 'linear-gradient(135deg, #78350f 0%, #92400e 40%, #1c0a00 100%)' }}
+    >
       {/* Animation */}
       <div className="mb-8 relative">
         {animationType === 'candle' && <CandleAnimation />}
@@ -181,34 +147,25 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
         {animationType === 'stars' && <StarsAnimation />}
       </div>
 
-      {/* Status text */}
-      {!showEmailCapture && (
-        <>
-          <p
-            key={messageIdx}
-            className="font-serif text-white text-xl mb-3 animate-pulse-fade"
-            style={{ minHeight: '32px' }}
-          >
-            {MESSAGES[messageIdx]}
-          </p>
+      {/* Rotating status message */}
+      <p
+        key={messageIdx}
+        className="font-serif text-white text-xl mb-2"
+        style={{ minHeight: '32px' }}
+      >
+        {MESSAGES[messageIdx]}
+      </p>
+      <p className="text-white/40 text-sm font-serif mb-8">
+        Usually ready in about a minute.
+      </p>
 
-          <p className="text-white/40 text-sm font-serif">
-            Usually ready in about a minute.
-          </p>
-        </>
-      )}
-
-      {/* Email capture — shown after 10 seconds or on failure */}
-      {showEmailCapture && !emailSubmitted && (
+      {/* Email capture — shown immediately so user has time */}
+      {!emailSubmitted && !emailSkipped && (
         <div className="max-w-sm w-full">
-          <p className="font-serif text-white text-lg mb-2">
-            Your tribute is being created ✨
+          <p className="text-white/70 text-sm mb-4 font-serif">
+            Enter your email and we&apos;ll send you the link too.
           </p>
-          <p className="text-white/60 text-sm mb-6 font-serif">
-            Enter your email and we&apos;ll send you the link the moment it&apos;s ready.
-          </p>
-
-          <form onSubmit={handleEmailSubmit} className="flex gap-2">
+          <form onSubmit={handleEmailSubmit} className="flex gap-2 mb-3">
             <input
               type="email"
               value={email}
@@ -225,24 +182,34 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
               Send
             </button>
           </form>
+          <button
+            onClick={handleSkip}
+            className="text-white/30 text-xs font-serif hover:text-white/50 transition-colors"
+          >
+            Skip, just take me to the tribute →
+          </button>
         </div>
       )}
 
-      {/* Email submitted confirmation */}
+      {/* After email submitted */}
       {emailSubmitted && (
         <div>
           <p className="font-serif text-white text-lg mb-2">✓ We&apos;ll send it to you.</p>
-          <p className="text-white/60 text-sm font-serif mb-5">
-            Check your inbox in a few minutes.
-          </p>
-          {/* Manual navigation fallback — prominent button in case auto-redirect fails */}
+          <p className="text-white/60 text-sm font-serif mb-5">Taking you to your tribute…</p>
           <a
             href={`/tribute/${slug}/celebrate`}
-            className="inline-block bg-amber-600 text-white rounded-full px-6 py-3 font-serif text-base transition-colors hover:bg-amber-700"
+            className="inline-block bg-amber-600 text-white rounded-full px-6 py-3 font-serif text-base hover:bg-amber-700 transition-colors"
           >
             View tribute →
           </a>
         </div>
+      )}
+
+      {/* After skipped — waiting for tribute to finish */}
+      {emailSkipped && !tributeReadyRef.current && (
+        <p className="text-white/50 text-sm font-serif">
+          Almost there… taking you to your tribute.
+        </p>
       )}
     </div>
   )
@@ -255,31 +222,22 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
 function CandleAnimation() {
   return (
     <div className="relative flex items-end justify-center" style={{ width: 60, height: 100 }}>
-      {/* Flame */}
       <div
         className="candle-flame"
         style={{
-          width: 18,
-          height: 30,
+          width: 18, height: 30,
           background: 'radial-gradient(ellipse at 50% 80%, #FCD34D, #F59E0B, #D97706)',
           borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-          position: 'absolute',
-          top: 0,
-          left: '50%',
+          position: 'absolute', top: 0, left: '50%',
           transform: 'translateX(-50%)',
           boxShadow: '0 0 20px 8px rgba(245,158,11,0.4)',
         }}
       />
-      {/* Candle body */}
       <div
         style={{
-          width: 12,
-          height: 60,
+          width: 12, height: 60,
           background: 'linear-gradient(to right, #FEF3E2, #FDE68A, #FEF3E2)',
-          borderRadius: '2px',
-          position: 'absolute',
-          bottom: 0,
-          left: '50%',
+          borderRadius: '2px', position: 'absolute', bottom: 0, left: '50%',
           transform: 'translateX(-50%)',
         }}
       />
@@ -289,9 +247,7 @@ function CandleAnimation() {
 
 function PawAnimation() {
   return (
-    <div className="text-6xl" style={{ animation: 'bounce 2s ease-in-out infinite' }}>
-      🐾
-    </div>
+    <div className="text-6xl" style={{ animation: 'bounce 2s ease-in-out infinite' }}>🐾</div>
   )
 }
 
@@ -299,14 +255,7 @@ function StarsAnimation() {
   return (
     <div className="flex gap-2 items-center" style={{ animation: 'pulse 2s ease-in-out infinite' }}>
       {['✨', '⭐', '✨'].map((star, i) => (
-        <span
-          key={i}
-          className="text-3xl"
-          style={{
-            animation: `pulseFade 2s ease-in-out ${i * 0.4}s infinite`,
-            display: 'inline-block',
-          }}
-        >
+        <span key={i} className="text-3xl" style={{ animation: `pulseFade 2s ease-in-out ${i * 0.4}s infinite`, display: 'inline-block' }}>
           {star}
         </span>
       ))}
