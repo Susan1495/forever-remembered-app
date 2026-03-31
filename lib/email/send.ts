@@ -44,7 +44,14 @@ export function buildEmailPhotoUrl(cdnUrl: string | undefined | null): string | 
   return url.toString()
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy-initialise Resend so module-level instantiation doesn't throw during
+// Next.js build-time static analysis when env vars are absent.
+function getResend(): Resend {
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new Error('RESEND_API_KEY is not set')
+  return new Resend(key)
+}
+
 const FROM = process.env.EMAIL_FROM || 'hello@foreverremembered.ai'
 const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://foreverremembered.ai'
 
@@ -69,7 +76,7 @@ export async function sendTributeReadyEmail(options: {
   const heroPhotoUrl = buildEmailPhotoUrl(options.heroPhotoUrl)
 
   try {
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: `Forever Remembered <${FROM}>`,
       to: options.to,
       replyTo: 'support@foreverremembered.ai',
@@ -121,7 +128,7 @@ export async function sendUpsellInterestEmail(options: {
   const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}`
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: `Forever Remembered <${FROM}>`,
       to: options.to,
       replyTo: 'support@foreverremembered.ai',
@@ -156,7 +163,7 @@ export async function sendOrderConfirmationEmail(options: {
   const tierLabel = options.tier.charAt(0).toUpperCase() + options.tier.slice(1)
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: `Forever Remembered <${FROM}>`,
       to: options.to,
       replyTo: 'support@foreverremembered.ai',
