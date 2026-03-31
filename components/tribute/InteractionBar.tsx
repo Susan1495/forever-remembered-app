@@ -13,6 +13,8 @@ interface InteractionBarProps {
   initialCandleCount: number
   subjectName: string
   onShare?: () => void
+  /** Called after a visitor successfully lights a candle */
+  onCandleLight?: () => void
 }
 
 export function InteractionBar({
@@ -20,6 +22,7 @@ export function InteractionBar({
   initialCandleCount,
   subjectName,
   onShare,
+  onCandleLight,
 }: InteractionBarProps) {
   const [candleCount, setCandleCount] = useState(initialCandleCount)
   const [candleLit, setCandleLit] = useState(false)
@@ -55,6 +58,9 @@ export function InteractionBar({
     } finally {
       setIsLighting(false)
     }
+
+    // Notify parent so it can trigger the upsell drawer
+    onCandleLight?.()
   }
 
   const handleShare = async () => {

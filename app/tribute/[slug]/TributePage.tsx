@@ -49,18 +49,22 @@ export function TributePage({
     localStorage.setItem(`theme-${tribute.slug}`, newTheme)
   }
 
-  // Show upsell drawer 30s after creator first views their tribute
-  // Don't show if they just completed an order
+  // Show upsell drawer after viewing:
+  //   - 30s for the creator
+  //   - 60s for all other visitors
+  // Don't show if order already completed or upsell dismissed this session.
   useEffect(() => {
-    if (!isCreator || upsellDismissed || orderSuccess) return
+    if (upsellDismissed || orderSuccess) return
 
     // Check if already dismissed in this session
     const dismissed = sessionStorage.getItem(`upsell-dismissed-${tribute.slug}`)
     if (dismissed) return
 
+    const delay = isCreator ? 30000 : 60000
+
     const timeout = setTimeout(() => {
       setShowUpsell(true)
-    }, 30000) // 30 seconds
+    }, delay)
 
     return () => clearTimeout(timeout)
   }, [isCreator, tribute.slug, upsellDismissed, orderSuccess])
@@ -71,11 +75,21 @@ export function TributePage({
     sessionStorage.setItem(`upsell-dismissed-${tribute.slug}`, '1')
   }
 
-  const handleShare = () => {
-    // Trigger upsell on first share if creator and not already shown
-    if (isCreator && !showUpsell && !upsellDismissed) {
-      setShowUpsell(true)
+  const triggerUpsell = () => {
+    if (!showUpsell && !upsellDismissed && !orderSuccess) {
+      const dismissed = sessionStorage.getItem(`upsell-dismissed-${tribute.slug}`)
+      if (!dismissed) {
+        setShowUpsell(true)
+      }
     }
+  }
+
+  const handleShare = () => {
+    triggerUpsell()
+  }
+
+  const handleCandleLight = () => {
+    triggerUpsell()
   }
 
   return (
@@ -172,6 +186,23 @@ export function TributePage({
           🕯️
         </div>
 
+        {/* Preserve this tribute CTA — visible to all visitors */}
+        {!orderSuccess && (
+          <div className="mb-6">
+            <button
+              onClick={triggerUpsell}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-serif font-semibold text-white text-sm transition-all hover:opacity-90 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, #92400e, #D97706)',
+                boxShadow: '0 2px 12px rgba(217, 119, 6, 0.35)',
+              }}
+            >
+              <span aria-hidden="true">🕯️</span>
+              Preserve this tribute
+            </button>
+          </div>
+        )}
+
         {/* Wordmark */}
         <p className="mb-1" style={{ color: 'var(--color-muted)', fontSize: '0.75rem' }}>
           Created on{' '}
@@ -218,6 +249,7 @@ export function TributePage({
         initialCandleCount={tribute.candle_count}
         subjectName={tribute.subject_name}
         onShare={handleShare}
+        onCandleLight={handleCandleLight}
       />
 
       {/* Upsell drawer */}
