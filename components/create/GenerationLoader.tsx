@@ -65,7 +65,9 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
   }, [elapsedSeconds])
 
   // Poll status — failedPolls is a ref so this callback is stable
-  const checkStatus = useCallback(async () => {
+  const checkStatus = useCallback(async (opts?: { showEmail?: boolean; submitted?: boolean }) => {
+    const emailVisible = opts?.showEmail ?? showEmailCapture
+    const alreadySubmitted = opts?.submitted ?? emailSubmitted
     try {
       const res = await fetch(`/api/tribute/${slug}/status`, {
         cache: 'no-store',
@@ -83,7 +85,13 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
       const { status } = await res.json()
 
       if (status === 'published') {
-        // Always redirect when published — even if emailSubmitted confirmation is showing
+        // If email form is visible but not yet submitted, wait — give user time to enter email.
+        // Once submitted (or if form was never shown), redirect immediately.
+        if (emailVisible && !alreadySubmitted) {
+          // Tribute is ready — don't redirect yet, user is filling in email.
+          // The amber "View your tribute →" button gives them a manual escape hatch.
+          return
+        }
         router.replace(`/tribute/${slug}/celebrate`)
         return
       }
@@ -102,7 +110,7 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
         setShowEmailCapture(true)
       }
     }
-  }, [slug, router])
+  }, [slug, router, showEmailCapture, emailSubmitted])
 
   // Start polling — interval adapts based on failedPollsRef
   useEffect(() => {
@@ -160,6 +168,8 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
     // Keep local copy as fallback
     localStorage.setItem(`tribute-email-${slug}`, email)
     setEmailSubmitted(true)
+    // Now that email is saved, redirect to celebrate page immediately
+    router.replace(`/tribute/${slug}/celebrate`)
   }
 
   return (

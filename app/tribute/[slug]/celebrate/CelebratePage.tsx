@@ -1,5 +1,3 @@
-'use client'
-
 /**
  * CelebratePage — Post-generation upsell interstitial
  *
@@ -7,9 +5,9 @@
  * Emotionally warm, premium feel, NOT salesy.
  * Mobile-first design matching the Forever Remembered aesthetic.
  *
- * Design principle: fully static render — no useState that could trigger
- * a re-render and cause mobile Safari to scroll-to-top.
- * Checkout is handled by CheckoutButton (isolated client island).
+ * Design principle: pure server component — no 'use client', no useState,
+ * no re-renders. Checkout handled by isolated CheckoutButton client island.
+ * Avoids mobile Safari scroll-to-top caused by client re-renders + 100vh.
  */
 
 import type { Tribute } from '@/lib/types'
@@ -69,7 +67,7 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
 
   return (
     <div
-      style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)', minHeight: '100vh' }}
+      style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)', paddingBottom: '60px' }}
     >
       {/* Hero area — fully static, no JS */}
       <div
