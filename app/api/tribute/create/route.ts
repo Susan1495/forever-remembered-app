@@ -7,6 +7,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { waitUntil } from '@vercel/functions'
 import { createTribute } from '@/lib/db/tributes'
+
+// Allow up to 60 s of execution time so waitUntil-triggered generation isn't
+// cut short on Vercel's hobby/free tier.
+export const maxDuration = 60
 import { insertTributePhotos } from '@/lib/db/photos'
 import { generateSlug, determineAgeGroup, isPersonLiving } from '@/lib/slug'
 import { checkTributeCreationLimit } from '@/lib/rate-limit'

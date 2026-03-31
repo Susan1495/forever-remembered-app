@@ -225,12 +225,12 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
           <p className="text-white/60 text-sm font-serif mb-5">
             Check your inbox in a few minutes.
           </p>
-          {/* Manual navigation fallback — in case polling doesn't fire the redirect */}
+          {/* Manual navigation fallback — prominent button in case auto-redirect fails */}
           <a
             href={`/tribute/${slug}/celebrate`}
-            className="font-serif text-amber-400 hover:text-amber-300 text-sm transition-colors underline-offset-2 hover:underline"
+            className="inline-block bg-amber-600 text-white rounded-full px-6 py-3 font-serif text-base transition-colors hover:bg-amber-700"
           >
-            View your tribute →
+            View tribute →
           </a>
         </div>
       )}

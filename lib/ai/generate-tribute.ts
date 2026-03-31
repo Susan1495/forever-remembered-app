@@ -10,7 +10,6 @@ import { generateTributeText } from './generate-text'
 import { generatePlaceholderArt } from './generate-art'
 import { getTributeById, updateTribute } from '@/lib/db/tributes'
 import { getTributePhotos, insertTributePhoto, updateTributePhoto } from '@/lib/db/photos'
-import { sendTributeReadyEmail } from '@/lib/email/send'
 import { createServerClient } from '@/lib/supabase'
 import type { AITheme, TemplateId } from '@/lib/types'
 
@@ -154,21 +153,22 @@ export async function generateTribute(tributeId: string): Promise<void> {
       generated_at: now,
     })
 
-    // Step 8: Send "tribute ready" email if creator_email is set
+    // Step 8: Fire-and-forget email via a dedicated internal route.
+    // We intentionally do NOT await this — decoupling the email from the
+    // generation pipeline ensures a Vercel timeout can't kill the email send
+    // and lets this function return as soon as the DB write is done.
     if (tribute.creator_email) {
-      // Resolve the hero photo URL so the email can show the tribute photo.
-      // heroPhotoIndex was just written to the DB — use it from photoAnalysis.
-      const heroIdx = photoAnalysis?.heroPhotoIndex ?? 0
-      const heroPhoto = photos[heroIdx] || photos[0]
-
-      await sendTributeReadyEmail({
-        to: tribute.creator_email,
-        subjectName: tribute.subject_name,
-        tributeSlug: tribute.slug,
-        // Pass the CDN URL; buildEmailPhotoUrl (in lib/email/send.ts) will
-        // append Supabase image-transform params to normalise EXIF orientation.
-        heroPhotoUrl: heroPhoto?.cdn_url,
-      })
+      const baseUrl = (process.env.NEXT_PUBLIC_URL ?? '').trim()
+      fetch(`${baseUrl}/api/internal/send-tribute-ready-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-secret': process.env.INTERNAL_SECRET ?? '',
+        },
+        body: JSON.stringify({ tributeId }),
+      }).catch(err =>
+        console.warn('[generateTribute] Fire-and-forget email trigger failed:', err)
+      )
     }
 
     console.log(`Tribute generated successfully: ${tribute.slug}`)
