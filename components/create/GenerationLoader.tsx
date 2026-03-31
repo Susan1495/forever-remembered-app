@@ -78,7 +78,8 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
       const { status } = await res.json()
 
       if (status === 'published') {
-        router.replace(`/tribute/${slug}?created=1`)
+        // Redirect to celebrate interstitial — catches creator at peak emotion
+        router.replace(`/tribute/${slug}/celebrate`)
         return
       }
 

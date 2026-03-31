@@ -1,6 +1,7 @@
 /**
  * "Your tribute is ready" email template
- * Sent when generation completes and creator_email is on record
+ * Sent when generation completes and creator_email is on record.
+ * Includes soft upsell below the tribute link.
  */
 
 import React from 'react'
@@ -22,18 +23,23 @@ import {
 interface TributeReadyEmailProps {
   subjectName: string
   tributeUrl: string
+  celebrateUrl?: string
   heroPhotoUrl?: string
 }
 
 export function TributeReadyEmail({
   subjectName,
   tributeUrl,
+  celebrateUrl,
   heroPhotoUrl,
 }: TributeReadyEmailProps) {
+  // Link for upsell CTA — celebrate page if provided, otherwise direct to tribute
+  const upsellUrl = celebrateUrl || tributeUrl
+
   return (
     <Html>
       <Head />
-      <Preview>{subjectName}&apos;s tribute is ready ✨</Preview>
+      <Preview>Your tribute for {subjectName} is ready 🌹</Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
           {/* Hero photo if available */}
@@ -66,7 +72,7 @@ export function TributeReadyEmail({
 
           {/* Main content */}
           <Section style={contentSection}>
-            <Heading style={headingStyle}>{subjectName}&apos;s tribute is ready.</Heading>
+            <Heading style={headingStyle}>Your tribute for {subjectName} is ready 🌹</Heading>
 
             <Text style={bodyText}>
               We put together something we hope does them justice.
@@ -76,7 +82,7 @@ export function TributeReadyEmail({
               Take a moment. Read it. It&apos;s theirs now.
             </Text>
 
-            {/* CTA Button */}
+            {/* Primary CTA Button */}
             <Section style={buttonSection}>
               <Button href={tributeUrl} style={buttonStyle}>
                 View {subjectName}&apos;s Tribute →
@@ -85,10 +91,22 @@ export function TributeReadyEmail({
 
             <Hr style={divider} />
 
-            <Text style={mutedText}>
-              This tribute is free and will be available for 1 year.
-              If you&apos;d like to preserve it permanently, we can help with that.
-            </Text>
+            {/* Soft upsell section */}
+            <Section style={upsellSection}>
+              <Text style={upsellHeading}>Want to preserve this forever?</Text>
+              <Text style={upsellBody}>
+                Your tribute is free and available for 1 year. Upgrade to{' '}
+                <strong>Keep for $39</strong> and it&apos;s yours permanently — with a
+                printable PDF memorial card included.
+              </Text>
+
+              {/* Upsell CTA — smaller, secondary */}
+              <Section style={{ textAlign: 'center' as const, margin: '20px 0' }}>
+                <Button href={upsellUrl} style={upsellButtonStyle}>
+                  Preserve {subjectName}&apos;s tribute — from $39 →
+                </Button>
+              </Section>
+            </Section>
           </Section>
 
           {/* Footer */}
@@ -138,18 +156,6 @@ const heroSection = {
 
 /**
  * Email-safe image styles.
- *
- * Key constraints for email clients:
- * - width="480" attribute on <Img> caps the render width; combined with
- *   style width:100% it scales down on narrow viewports without ever
- *   going wider than 480px.
- * - height="auto" / no fixed height → the image keeps its natural aspect
- *   ratio, so a portrait photo stays portrait.
- * - objectFit is intentionally omitted — it's unsupported in email clients
- *   and was previously masking orientation/sizing bugs.
- * - EXIF orientation is normalised server-side before the URL reaches here
- *   (see lib/email/send.ts → buildEmailPhotoUrl), so the pixels already
- *   reflect the correct orientation; we don't need any CSS rotation.
  */
 const heroImage = {
   width: '100%',
@@ -176,7 +182,7 @@ const contentSection = {
 
 const headingStyle = {
   color: '#1C1007',
-  fontSize: '28px',
+  fontSize: '26px',
   fontFamily: 'Georgia, serif',
   fontWeight: '700',
   lineHeight: '1.3',
@@ -212,11 +218,38 @@ const divider = {
   margin: '24px 0',
 }
 
-const mutedText = {
-  color: '#6B5A45',
+const upsellSection = {
+  backgroundColor: '#FFFBF5',
+  borderRadius: '12px',
+  padding: '20px',
+  border: '1px solid #F0E8DC',
+}
+
+const upsellHeading = {
+  color: '#1C1007',
+  fontSize: '16px',
+  fontFamily: 'Georgia, serif',
+  fontWeight: '700',
+  margin: '0 0 10px',
+}
+
+const upsellBody = {
+  color: '#3D2B14',
   fontSize: '14px',
-  lineHeight: '1.5',
+  lineHeight: '1.6',
   margin: '0',
+}
+
+const upsellButtonStyle = {
+  backgroundColor: '#3D2B14',
+  borderRadius: '999px',
+  color: '#FFFFFF',
+  display: 'inline-block',
+  fontSize: '14px',
+  fontFamily: 'Georgia, serif',
+  fontWeight: '600',
+  padding: '12px 24px',
+  textDecoration: 'none',
 }
 
 const footerSection = {

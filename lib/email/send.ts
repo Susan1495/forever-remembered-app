@@ -5,6 +5,7 @@
 
 import { Resend } from 'resend'
 import { TributeReadyEmail } from '@/emails/tribute-ready'
+import { TributeFollowupEmail } from '@/emails/tribute-followup'
 import { UpsellInterestEmail } from '@/emails/upsell-interest'
 import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 
@@ -70,6 +71,7 @@ export async function sendTributeReadyEmail(options: {
   }
 
   const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}`
+  const celebrateUrl = `${BASE_URL}/tribute/${options.tributeSlug}/celebrate`
 
   // Normalise the photo URL: triggers EXIF auto-rotation in Supabase's image
   // transform pipeline so portrait photos display correctly in email clients.
@@ -80,10 +82,11 @@ export async function sendTributeReadyEmail(options: {
       from: `Forever Remembered <${FROM}>`,
       to: options.to,
       replyTo: 'support@foreverremembered.ai',
-      subject: `${options.subjectName}'s tribute is ready ✨`,
+      subject: `Your tribute for ${options.subjectName} is ready 🌹`,
       react: TributeReadyEmail({
         subjectName: options.subjectName,
         tributeUrl,
+        celebrateUrl,
         heroPhotoUrl,
       }),
     })
@@ -109,6 +112,50 @@ export async function sendTributeReadyEmail(options: {
   } catch (error) {
     console.error(`[email] Failed to send tribute ready email to ${options.to} tribute=${options.tributeSlug}:`, error)
     // Don't throw — email failure shouldn't break the generation pipeline
+  }
+}
+
+/**
+ * Send 24-hour follow-up email (upsell, no purchase yet)
+ */
+export async function sendTributeFollowupEmail(options: {
+  to: string
+  subjectName: string
+  tributeSlug: string
+}): Promise<void> {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('placeholder')) {
+    console.warn('Resend not configured — skipping tribute follow-up email')
+    return
+  }
+
+  const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}`
+  const celebrateUrl = `${BASE_URL}/tribute/${options.tributeSlug}/celebrate`
+
+  try {
+    const result = await getResend().emails.send({
+      from: `Forever Remembered <${FROM}>`,
+      to: options.to,
+      replyTo: 'support@foreverremembered.ai',
+      subject: `The people you shared ${options.subjectName}'s tribute with loved it 💛`,
+      react: TributeFollowupEmail({
+        subjectName: options.subjectName,
+        tributeUrl,
+        celebrateUrl,
+      }),
+    })
+
+    if ('error' in result && result.error) {
+      const err = result.error as { statusCode?: number; name?: string; message?: string }
+      console.error(`[email] Follow-up email error for ${options.to} tribute=${options.tributeSlug}:`, err.message)
+      return
+    }
+
+    if ('data' in result && result.data?.id) {
+      console.log(`[email] Follow-up email sent to ${options.to} — id=${result.data.id} tribute=${options.tributeSlug}`)
+    }
+  } catch (error) {
+    console.error(`[email] Failed to send follow-up email to ${options.to} tribute=${options.tributeSlug}:`, error)
+    // Don't throw — email failure shouldn't block cron pipeline
   }
 }
 

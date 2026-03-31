@@ -57,6 +57,8 @@ export interface Tribute {
   // Phase 2 — added via 002_orders.sql migration
   tier: 'free' | 'keep' | 'cherish' | 'legacy' | null
   custom_subdomain: string | null
+  // Phase 4 — added via 006_followup_email.sql migration
+  follow_up_sent?: boolean
 }
 
 export interface TributePhoto {

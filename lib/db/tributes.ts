@@ -76,6 +76,8 @@ export async function updateTribute(
     creator_email: string
     tier: 'free' | 'keep' | 'cherish' | 'legacy'
     expires_at: string | null
+    follow_up_sent: boolean
+
   }>
 ): Promise<void> {
   const db = createServerClient()
