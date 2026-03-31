@@ -116,6 +116,17 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
     return () => clearTimeout(timeout)
   }, [checkStatus, failedPolls])
 
+  // Re-check status when user returns to tab (e.g. backgrounded on mobile)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkStatus()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [checkStatus])
+
   // Handle browser back button
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
