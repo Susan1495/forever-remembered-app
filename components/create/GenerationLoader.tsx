@@ -106,7 +106,7 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
 
     // Poll every 3 seconds with exponential backoff after failures
     const getInterval = () => {
-      if (failedPolls >= 10) return 10000
+      if (failedPolls >= 10) return 15000
       if (failedPolls >= 5) return 5000
       return 3000
     }
