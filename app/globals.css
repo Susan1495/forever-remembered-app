@@ -28,7 +28,8 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    /* Note: scroll-behavior: smooth removed — causes scroll-to-top bug on
+       mobile Safari (iOS) when images load async and trigger layout reflow. */
     -webkit-text-size-adjust: 100%;
   }
 

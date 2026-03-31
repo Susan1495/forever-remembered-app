@@ -157,6 +157,9 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
                 src={heroPhotoUrl}
                 alt={tribute.subject_name}
                 className="w-full h-full object-cover"
+                width={120}
+                height={120}
+                style={{ display: 'block' }}
               />
             </div>
           )}
