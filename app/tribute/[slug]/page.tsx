@@ -11,12 +11,13 @@ import { getTributePhotos } from '@/lib/db/photos'
 import { TributePage } from './TributePage'
 
 interface Props {
-  params: { slug: string }
-  searchParams: { created?: string; order?: string }
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ created?: string; order?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const tribute = await getTributeBySlug(params.slug)
+  const { slug } = await params
+  const tribute = await getTributeBySlug(slug)
 
   if (!tribute || tribute.status !== 'published') {
     return {
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://foreverremembered.ai'
   const isLiving = tribute.is_living
   const titlePrefix = isLiving ? 'Honoring' : 'In memory of'
-  const description = tribute.ai_body?.opening?.substring(0, 160) || 
+  const description = tribute.ai_body?.opening?.substring(0, 160) ||
     `${tribute.ai_headline || `A tribute to ${tribute.subject_name}`}`
 
   return {
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       images: [
         {
-          url: `${baseUrl}/api/og/${params.slug}`,
+          url: `${baseUrl}/api/og/${slug}`,
           width: 1200,
           height: 630,
           alt: `${titlePrefix} ${tribute.subject_name}`,
@@ -50,22 +51,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: tribute.ai_headline || tribute.subject_name,
       description,
-      images: [`${baseUrl}/api/og/${params.slug}`],
+      images: [`${baseUrl}/api/og/${slug}`],
     },
-    // Unlisted by default — not indexed by search engines
     robots: { index: false, follow: false },
   }
 }
 
 export default async function TributePageRoute({ params, searchParams }: Props) {
-  const tribute = await getTributeBySlug(params.slug)
+  const { slug } = await params
+  const { created, order } = await searchParams
+
+  const tribute = await getTributeBySlug(slug)
 
   if (!tribute) {
     notFound()
   }
 
   if (tribute.status === 'processing') {
-    // Redirect back to generation loader
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center px-5">
         <div className="text-center">
@@ -73,7 +75,7 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
             This tribute is still being created…
           </p>
           <a
-            href={`/create/generating/${params.slug}`}
+            href={`/create/generating/${slug}`}
             className="text-amber-400 text-sm hover:text-amber-300 transition-colors"
           >
             Check status →
@@ -113,8 +115,8 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
 
   const photos = await getTributePhotos(tribute.id)
   const heroPhoto = photos[tribute.hero_photo_idx || 0] || photos[0]
-  const isCreator = searchParams.created === '1'
-  const orderSuccess = searchParams.order === 'success'
+  const isCreator = created === '1'
+  const orderSuccess = order === 'success'
 
   return (
     <TributePage
@@ -127,4 +129,4 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
   )
 }
 
-export const revalidate = 3600 // Revalidate every hour
+export const revalidate = 3600

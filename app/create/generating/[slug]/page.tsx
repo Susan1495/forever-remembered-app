@@ -6,15 +6,18 @@
 import { GenerationLoader } from '@/components/create/GenerationLoader'
 
 interface PageProps {
-  params: { slug: string }
-  searchParams: { relationship?: string }
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ relationship?: string }>
 }
 
-export default function GeneratingPage({ params, searchParams }: PageProps) {
+export default async function GeneratingPage({ params, searchParams }: PageProps) {
+  const { slug } = await params
+  const { relationship } = await searchParams
+
   return (
     <GenerationLoader
-      slug={params.slug}
-      relationship={searchParams.relationship}
+      slug={slug}
+      relationship={relationship}
     />
   )
 }
