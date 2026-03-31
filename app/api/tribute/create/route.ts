@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
 
     // Insert photo records if photos were uploaded
     if (body.photoStoragePaths && body.photoStoragePaths.length > 0) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+      // Trim any accidental whitespace/newlines from env var before building URLs
+      const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim()
       const photoRecords = body.photoStoragePaths.map((path, idx) => ({
         storage_path: path,
         cdn_url: `${supabaseUrl}/storage/v1/object/public/tribute-photos/${path}`,
