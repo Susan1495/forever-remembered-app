@@ -56,9 +56,9 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
     return () => clearInterval(interval)
   }, [])
 
-  // Show email capture after 5 minutes
+  // Show email capture after 10 seconds
   useEffect(() => {
-    if (elapsedSeconds >= 300) {
+    if (elapsedSeconds >= 10) {
       setShowEmailCapture(true)
     }
   }, [elapsedSeconds])
@@ -128,7 +128,17 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Store email — will be picked up when tribute is ready
+    try {
+      await fetch(`/api/tribute/${slug}/email`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+    } catch {
+      // Non-fatal — still show confirmation to user
+      console.error('Failed to save email to server')
+    }
+    // Keep local copy as fallback
     localStorage.setItem(`tribute-email-${slug}`, email)
     setEmailSubmitted(true)
   }
@@ -159,14 +169,14 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
         </>
       )}
 
-      {/* Email capture — shown on timeout or failure */}
+      {/* Email capture — shown after 10 seconds or on failure */}
       {showEmailCapture && !emailSubmitted && (
         <div className="max-w-sm w-full">
           <p className="font-serif text-white text-lg mb-2">
-            We&apos;re taking a little longer than expected.
+            Your tribute is being created ✨
           </p>
           <p className="text-white/60 text-sm mb-6 font-serif">
-            We&apos;ll email you the link when it&apos;s ready.
+            Enter your email and we&apos;ll send you the link the moment it&apos;s ready.
           </p>
 
           <form onSubmit={handleEmailSubmit} className="flex gap-2">
