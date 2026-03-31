@@ -9,7 +9,6 @@
  */
 
 import { useState } from 'react'
-import Image from 'next/image'
 import type { Tribute } from '@/lib/types'
 
 interface CelebratePageProps {
@@ -92,7 +91,7 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
       }
 
       throw new Error(data.error || 'Something went wrong')
-    } catch (err) {
+    } catch {
       setError('Unable to start checkout. Please try again.')
       setLoadingTier(null)
     }
@@ -117,6 +116,7 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
         {/* Hero photo — blurred/tinted overlay */}
         {heroPhotoUrl && (
           <div className="absolute inset-0 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={heroPhotoUrl}
               alt={`${tribute.subject_name}`}
@@ -151,6 +151,7 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
               }}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={heroPhotoUrl}
                 alt={tribute.subject_name}

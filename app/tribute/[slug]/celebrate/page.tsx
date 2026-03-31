@@ -16,7 +16,7 @@ interface Props {
   params: { slug: string }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(_: Props): Promise<Metadata> {
   return {
     title: 'Your tribute is ready — Forever Remembered',
     robots: { index: false, follow: false },
