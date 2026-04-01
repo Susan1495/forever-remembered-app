@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
+  verification: {
+    google: 'XnPPlvpp7lQh60wf58aLToT9GYYeCjSkfN77ZoNJddQ',
+  },
   title: 'Forever Remembered — Create a free tribute for someone you love',
   description:
     'Upload a few photos. Write a few sentences. In under 2 minutes, we\'ll create a beautiful tribute page you can share with everyone who loved them. Free, always.',
