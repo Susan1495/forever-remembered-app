@@ -190,63 +190,29 @@ export function MemoriesSection({ slug, onUpgrade }: MemoriesSectionProps) {
           margin: '0 auto',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '24px',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}
-        >
-          <div>
-            <h2
+        <div style={{ marginBottom: '24px' }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-serif, Georgia, serif)',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: '#3D2B14',
+              margin: 0,
+            }}
+          >
+            Memories
+          </h2>
+          {!loading && memories.length > 0 && (
+            <p
               style={{
                 fontFamily: 'var(--font-serif, Georgia, serif)',
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                color: '#3D2B14',
-                margin: 0,
-              }}
-            >
-              Memories
-            </h2>
-            {!loading && memories.length > 0 && (
-              <p
-                style={{
-                  fontFamily: 'var(--font-serif, Georgia, serif)',
-                  fontSize: '0.875rem',
-                  color: '#9B8B78',
-                  margin: '4px 0 0',
-                }}
-              >
-                {memories.length} {memories.length === 1 ? 'memory' : 'memories'} shared
-              </p>
-            )}
-          </div>
-
-          {!showForm && (
-            <button
-              onClick={handleAddClick}
-              style={{
-                background: 'linear-gradient(135deg, #92400e, #D97706)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '24px',
-                padding: '10px 20px',
-                fontFamily: 'var(--font-serif, Georgia, serif)',
-                fontWeight: 600,
                 fontSize: '0.875rem',
-                cursor: 'pointer',
-                boxShadow: '0 2px 10px rgba(217, 119, 6, 0.3)',
-                transition: 'opacity 0.15s, transform 0.15s',
+                color: '#9B8B78',
+                margin: '4px 0 0',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
             >
-              ✍️ Add a Memory
-            </button>
+              {memories.length} {memories.length === 1 ? 'memory' : 'memories'} shared
+            </p>
           )}
         </div>
 

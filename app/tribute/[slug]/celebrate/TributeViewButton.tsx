@@ -18,7 +18,9 @@ interface Props {
 
 export function TributeViewButton({ slug, subjectName, initialStatus }: Props) {
   const router = useRouter()
-  const [status, setStatus] = useState(initialStatus)
+  // Treat any non-processing status as published (ready to navigate)
+  const normalizeStatus = (s: string) => s === 'processing' ? 'processing' : 'published'
+  const [status, setStatus] = useState(normalizeStatus(initialStatus))
   const [clicked, setClicked] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 

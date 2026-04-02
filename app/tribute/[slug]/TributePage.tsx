@@ -78,11 +78,10 @@ export function TributePage({
   }
 
   const triggerUpsell = () => {
-    if (!showUpsell && !upsellDismissed && !orderSuccess) {
-      const dismissed = sessionStorage.getItem(`upsell-dismissed-${tribute.slug}`)
-      if (!dismissed) {
-        setShowUpsell(true)
-      }
+    if (!showUpsell && !orderSuccess) {
+      setShowUpsell(true)
+      setUpsellDismissed(false)
+      sessionStorage.removeItem(`upsell-dismissed-${tribute.slug}`)
     }
   }
 
