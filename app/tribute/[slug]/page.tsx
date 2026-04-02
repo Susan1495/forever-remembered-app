@@ -68,18 +68,16 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
   }
 
   if (tribute.status === 'processing') {
+    // Auto-redirect to generating page which polls until published
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center px-5">
         <div className="text-center">
+          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🌹</div>
           <p className="font-serif text-white text-lg mb-4">
-            This tribute is still being created…
+            Your tribute is almost ready…
           </p>
-          <a
-            href={`/create/generating/${slug}`}
-            className="text-amber-400 text-sm hover:text-amber-300 transition-colors"
-          >
-            Check status →
-          </a>
+          <p className="text-white/50 text-sm mb-6">Taking you there now.</p>
+          <meta httpEquiv="refresh" content={`2;url=/create/generating/${slug}`} />
         </div>
       </div>
     )
@@ -178,4 +176,5 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
   )
 }
 
-export const revalidate = 3600
+export const revalidate = 0
+export const dynamic = 'force-dynamic'

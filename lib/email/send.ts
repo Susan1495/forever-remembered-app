@@ -73,7 +73,7 @@ export async function sendTributeReadyEmail(options: {
     return
   }
 
-  const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}`
+  const tributeUrl = `${BASE_URL}/tribute/${options.tributeSlug}?created=1`
   const celebrateUrl = `${BASE_URL}/tribute/${options.tributeSlug}/celebrate`
 
   // Normalise the photo URL: triggers EXIF auto-rotation in Supabase's image
