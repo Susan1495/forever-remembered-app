@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * Post-generation upsell interstitial
  * Route: /tribute/[slug]/celebrate

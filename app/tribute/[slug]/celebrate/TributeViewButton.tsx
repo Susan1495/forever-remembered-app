@@ -35,6 +35,8 @@ export function TributeViewButton({ slug, subjectName, initialStatus }: Props) {
         if (data.status === 'published') {
           setStatus('published')
           if (intervalRef.current) clearInterval(intervalRef.current)
+          // Auto-navigate immediately — no click needed
+          router.push(`/tribute/${slug}?created=1`)
         }
       } catch {
         // ignore network errors, keep polling
