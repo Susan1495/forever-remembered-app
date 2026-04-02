@@ -80,27 +80,21 @@ export function TributeFollowupEmail({
             {/* Tier options — text-based, email-safe */}
             <Section style={tiersSection}>
               <Text style={tierRow}>
-                <strong style={{ color: '#1C1007' }}>Keep — $39</strong>
-                <br />
-                <span style={{ color: '#6B5A45' }}>Permanent tribute page + shareable link + printable PDF card</span>
-              </Text>
-
-              <Hr style={tierDivider} />
-
-              <Text style={tierRow}>
-                <strong style={{ color: '#1C1007' }}>Cherish — $127</strong>
+                <strong style={{ color: '#1C1007' }}>Cherish — $9.99/mo</strong>
                 {' '}
                 <span style={badgeStyle}>Most Loved</span>
                 <br />
-                <span style={{ color: '#6B5A45' }}>Everything in Keep + 8-page memorial book PDF + photo restoration</span>
+                <span style={{ color: '#6B5A45' }}>Tribute lives forever · Add photos &amp; stories · Anniversary reminders · PDF memorial card · QR code</span>
+                <br />
+                <span style={{ color: '#9B8B78', fontSize: '12px' }}>Or $79/year — save 34%</span>
               </Text>
 
               <Hr style={tierDivider} />
 
               <Text style={tierRow}>
-                <strong style={{ color: '#1C1007' }}>Legacy — $397</strong>
+                <strong style={{ color: '#1C1007' }}>Legacy — $297</strong>
                 <br />
-                <span style={{ color: '#6B5A45' }}>Everything in Cherish + print-ready version for framing</span>
+                <span style={{ color: '#6B5A45' }}>Everything in Cherish + lifetime hosting (pay once) + hardcover memorial book printed &amp; shipped</span>
               </Text>
             </Section>
 

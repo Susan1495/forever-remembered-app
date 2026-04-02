@@ -80,14 +80,26 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
 
   // Start polling
   useEffect(() => {
-    checkStatus()
+    let cancelled = false
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+
     const scheduleNext = () => {
       const failed = failedPollsRef.current
       const delay = failed >= 10 ? 15000 : failed >= 5 ? 5000 : 3000
-      return setTimeout(() => { checkStatus(); scheduleNext() }, delay)
+      timeoutId = setTimeout(async () => {
+        if (cancelled) return
+        await checkStatus()
+        if (!cancelled) scheduleNext()
+      }, delay)
     }
-    const timeout = scheduleNext()
-    return () => clearTimeout(timeout)
+
+    checkStatus()
+    scheduleNext()
+
+    return () => {
+      cancelled = true
+      if (timeoutId !== null) clearTimeout(timeoutId)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkStatus])
 
