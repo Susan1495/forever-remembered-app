@@ -135,8 +135,11 @@ export function GenerationLoader({ slug, relationship }: GenerationLoaderProps) 
     }
     localStorage.setItem(`tribute-email-${slug}`, email)
     setEmailSubmitted(true)
-    // Redirect immediately — tribute may already be ready
-    goToCelebrate()
+    // Only navigate if tribute is already published — otherwise let polling handle it
+    if (tributeReadyRef.current) {
+      goToCelebrate()
+    }
+    // Otherwise polling will call goToCelebrate() when published
   }
 
   const handleSkip = () => {
