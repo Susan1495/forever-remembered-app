@@ -18,6 +18,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTributeBySlug } from '@/lib/db/tributes'
 
+export const dynamic = 'force-dynamic'
+
 type Tier = 'cherish_monthly' | 'cherish_annual' | 'legacy' | 'pdf'
 
 // Tier prices in cents

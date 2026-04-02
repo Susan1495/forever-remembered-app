@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getTributeBySlug } from '@/lib/db/tributes'
 import { createMemory } from '@/lib/db/memories'
 
+export const dynamic = 'force-dynamic'
+
 const PAID_TIERS = new Set(['cherish_monthly', 'cherish_annual', 'legacy'])
 
 export async function POST(

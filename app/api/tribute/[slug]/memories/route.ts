@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getTributeBySlug } from '@/lib/db/tributes'
 import { getMemories } from '@/lib/db/memories'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { slug: string } }
