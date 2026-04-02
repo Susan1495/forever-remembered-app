@@ -20,15 +20,16 @@ interface CelebratePageProps {
 
 const TIERS = [
   {
-    id: 'cherish' as const,
+    id: 'cherish_monthly' as const,
     name: 'Cherish',
     price: '$9.99/mo',
     priceSub: 'or $79/year',
-    tagline: 'Always live. Never forgotten.',
+    tagline: 'Their story keeps growing',
     features: [
-      'Tribute page never expires',
-      'PDF memorial card download',
-      'Anniversary reminders for family',
+      'Tribute page lives forever — never expires',
+      'Add new photos & stories anytime',
+      'Family gets anniversary reminders every year',
+      'PDF memorial card to download & print',
       'QR code for funeral programs',
     ],
     highlight: true,
@@ -39,11 +40,11 @@ const TIERS = [
     name: 'Legacy',
     price: '$297',
     priceSub: 'one-time, forever',
-    tagline: 'A physical keepsake to hold.',
+    tagline: 'A physical keepsake to hold forever',
     features: [
-      'Lifetime hosting — no subscription ever',
       'Everything in Cherish',
-      'Hardcover book printed & shipped to you',
+      'Lifetime hosting — pay once, done',
+      'Hardcover memorial book printed & shipped to you',
     ],
     highlight: false,
     badge: null,
