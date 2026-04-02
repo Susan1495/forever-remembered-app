@@ -255,26 +255,33 @@ export function TributePage({
 
         {/* Viral acquisition CTA */}
         <div
-          className="mt-6 py-4 px-5 rounded-xl"
-          style={{
-            background: 'rgba(0,0,0,0.04)',
-            maxWidth: '360px',
-            margin: '24px auto 0',
-          }}
+          className="mt-6"
+          style={{ maxWidth: '360px', margin: '24px auto 0' }}
         >
-          <p
-            className="font-serif text-sm mb-2"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            This tribute was created for free on Forever Remembered.
-          </p>
           <a
-            href="/"
-            className="inline-block"
-            style={{ color: 'var(--color-primary)', fontSize: '0.875rem', fontFamily: 'var(--font-serif)' }}
+            href="/create"
+            className="font-serif"
+            style={{
+              display: 'block',
+              background: 'linear-gradient(135deg, #92400e, #D97706)',
+              color: '#fff',
+              borderRadius: '999px',
+              padding: '14px 28px',
+              fontSize: '1rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(217,119,6,0.3)',
+            }}
           >
-            Want to create one for someone you love? →
+            🌹 Create a Free Tribute
           </a>
+          <p
+            className="font-serif text-xs mt-2"
+            style={{ color: 'var(--color-muted)', textAlign: 'center' }}
+          >
+            No account needed. Free forever.
+          </p>
         </div>
 
         {/* Spacer for sticky bar */}
