@@ -31,6 +31,7 @@ export function TributeViewButton({ slug, subjectName, initialStatus }: Props) {
     intervalRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/tribute/${slug}/status`)
+        if (res.status === 429) return // rate limited — just wait for next interval
         const data = await res.json()
         if (data.status === 'published') {
           setStatus('published')

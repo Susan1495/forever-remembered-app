@@ -50,7 +50,7 @@ export async function checkTributeCreationLimit(ip: string): Promise<{
   }
 }
 
-// 20 status polls per minute per IP
+// 120 status polls per minute per IP (2/sec — supports simultaneous pollers)
 export async function checkStatusPollLimit(ip: string): Promise<{
   success: boolean
 }> {
@@ -62,7 +62,7 @@ export async function checkStatusPollLimit(ip: string): Promise<{
 
   const ratelimit = new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(20, '1 m'),
+    limiter: Ratelimit.slidingWindow(120, '1 m'),
     prefix: 'tribute_status',
   })
 
