@@ -348,9 +348,18 @@ async function uploadPhoto(
         }
       }
       xhr.onerror = () => reject(new Error('Upload failed'))
-      xhr.open('PUT', presignedUrl)
-      xhr.setRequestHeader('Content-Type', photo.file.type)
-      xhr.send(photo.file)
+      // Supabase signed upload URLs use POST with multipart/form-data
+      if (presignedUrl.includes('/object/upload/sign/')) {
+        const formData = new FormData()
+        formData.append('', photo.file, photo.file.name)
+        xhr.open('POST', presignedUrl)
+        xhr.send(formData)
+      } else {
+        // Regular PUT for public bucket uploads
+        xhr.open('PUT', presignedUrl)
+        xhr.setRequestHeader('Content-Type', photo.file.type)
+        xhr.send(photo.file)
+      }
     })
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
