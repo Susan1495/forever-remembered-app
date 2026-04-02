@@ -1,10 +1,9 @@
 export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/tribute/[slug]/candle
  * Increment candle count — rate limited to 1 per IP per tribute per day
  */
-
-export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { incrementCandleCount, logEvent, getTributeBySlug } from '@/lib/db/tributes'

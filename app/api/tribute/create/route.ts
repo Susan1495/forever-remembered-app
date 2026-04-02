@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/tribute/create
  * Create tribute record and kick off AI generation pipeline
  * Rate limited: 3 per IP per hour
  */
-
-export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { waitUntil } from '@vercel/functions'
