@@ -10,8 +10,8 @@
 
 'use client'
 
-import { useState, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -37,8 +37,9 @@ const emptyForm = (): FormState => ({
   familyEmails: ['', '', '', '', ''],
 })
 
-export default function AnniversarySetupPage({ params }: Props) {
-  const { slug } = use(params)
+export default function AnniversarySetupPage({}: Props) {
+  const params = useParams()
+  const slug = params.slug as string
   const router = useRouter()
 
   const [form, setForm] = useState<FormState>(emptyForm())
