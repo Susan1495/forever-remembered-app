@@ -1,13 +1,11 @@
 'use client'
 
 /**
- * TributeViewButton — polls tribute status and navigates when published.
- * If the tribute is still processing, shows a spinner + "Getting it ready…"
- * and polls every 3s until published, then navigates automatically.
- * If already published, shows the normal "View Tribute" button.
+ * TributeViewButton — simple navigation button to the tribute page.
+ * Always shows immediately — no spinner, no polling.
+ * The tribute page handles any processing state gracefully.
  */
 
-import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Props {
@@ -16,61 +14,13 @@ interface Props {
   initialStatus: string
 }
 
-export function TributeViewButton({ slug, subjectName, initialStatus }: Props) {
+export function TributeViewButton({ slug, subjectName }: Props) {
   const router = useRouter()
-  // Treat any non-processing status as published (ready to navigate)
-  const normalizeStatus = (s: string) => s === 'processing' ? 'processing' : 'published'
-  const [status, setStatus] = useState(normalizeStatus(initialStatus))
-  const [clicked, setClicked] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  // If processing, auto-poll until published
-  useEffect(() => {
-    if (status === 'published') return
-
-    intervalRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/tribute/${slug}/status`)
-        if (res.status === 429) return // rate limited — just wait for next interval
-        const data = await res.json()
-        if (data.status === 'published') {
-          setStatus('published')
-          if (intervalRef.current) clearInterval(intervalRef.current)
-          // Auto-navigate immediately — no click needed
-          router.push(`/tribute/${slug}?created=1`)
-        }
-      } catch {
-        // ignore network errors, keep polling
-      }
-    }, 3000)
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [slug, status])
-
-  const handleClick = () => {
-    setClicked(true)
-    if (status === 'published') {
-      router.push(`/tribute/${slug}?created=1`)
-    }
-    // If still processing, just wait — the poll will navigate when ready
-  }
-
-  // Auto-navigate when status flips to published after user clicked
-  useEffect(() => {
-    if (status === 'published' && clicked) {
-      router.push(`/tribute/${slug}?created=1`)
-    }
-  }, [status, clicked, slug, router])
-
-  const isReady = status === 'published'
 
   return (
     <button
-      onClick={handleClick}
+      onClick={() => router.push(`/tribute/${slug}?created=1`)}
       className="font-serif"
-      disabled={!isReady && clicked}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -82,28 +32,10 @@ export function TributeViewButton({ slug, subjectName, initialStatus }: Props) {
         fontSize: '16px',
         fontWeight: 600,
         border: 'none',
-        cursor: isReady ? 'pointer' : 'default',
-        opacity: 1,
+        cursor: 'pointer',
       }}
     >
-      {!isReady ? (
-        <>
-          <span
-            style={{
-              width: 16,
-              height: 16,
-              border: '2px solid rgba(255,255,255,0.3)',
-              borderTopColor: '#fff',
-              borderRadius: '50%',
-              display: 'inline-block',
-              animation: 'spin 0.8s linear infinite',
-            }}
-          />
-          Getting it ready…
-        </>
-      ) : (
-        `View ${subjectName}'s Tribute →`
-      )}
+      {`View ${subjectName}'s Tribute →`}
     </button>
   )
 }
