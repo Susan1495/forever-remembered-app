@@ -190,7 +190,7 @@ export function MemoriesSection({ slug, onUpgrade }: MemoriesSectionProps) {
           margin: '0 auto',
         }}
       >
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '24px', textAlign: 'center' }}>
           <h2
             style={{
               fontFamily: 'var(--font-serif, Georgia, serif)',

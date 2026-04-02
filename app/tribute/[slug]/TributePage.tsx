@@ -162,6 +162,9 @@ export function TributePage({
         focalPointY={heroPhoto?.focal_point_y}
       />
 
+      {/* Memories / guestbook — right under the hero photo */}
+      <MemoriesSection slug={tribute.slug} onUpgrade={triggerUpsell} />
+
       {/* Story */}
       <StorySection
         body={tribute.ai_body}
@@ -177,9 +180,6 @@ export function TributePage({
         captions={tribute.ai_photo_captions}
         heroPhotoIdx={tribute.hero_photo_idx || 0}
       />
-
-      {/* Memories / guestbook */}
-      <MemoriesSection slug={tribute.slug} onUpgrade={triggerUpsell} />
 
       {/* Theme switcher */}
       <div
