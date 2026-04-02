@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/upsell/lead
  * Capture email for upsell interest
  * Records to upsell_leads table and sends Resend confirmation email
  */
+
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createUpsellLead, markUpsellLeadNotified } from '@/lib/db/upsell-leads'

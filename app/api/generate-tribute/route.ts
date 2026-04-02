@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/tribute/generate
  * Internal endpoint: runs the AI generation pipeline synchronously.

@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/tribute/[slug]/status
  * Poll generation status — called every 3 seconds from the loading screen
  * Rate limited: 20 req/min per IP
  */
+
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getTributeBySlug } from '@/lib/db/tributes'

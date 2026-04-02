@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/fulfillment/retry
  * Admin endpoint to manually retry failed fulfillments.

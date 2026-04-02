@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/admin/send-tribute-email
  * Admin endpoint to manually send a tribute-ready email for a specific tribute.

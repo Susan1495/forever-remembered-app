@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * PATCH /api/tribute/[slug]/email
  * Save (or update) the creator_email on a tribute record.

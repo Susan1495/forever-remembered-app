@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/admin/run-migration-ddl
  * Applies migration 005: adds generated_at column to tributes table.

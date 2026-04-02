@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/upload/presign
  * Get presigned URLs for direct-to-Supabase photo upload
  * Photos upload directly from browser to Supabase Storage (bypasses Vercel limits)
  */
+
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/admin/migrate
  * One-shot admin endpoint to apply pending data migrations.
