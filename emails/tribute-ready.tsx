@@ -116,15 +116,13 @@ export function TributeReadyEmail({
             <Section style={upsellSection}>
               <Text style={upsellHeading}>Want to preserve this forever?</Text>
               <Text style={upsellBody}>
-                Your tribute is free and available for 30 days. Upgrade to{' '}
-                <strong>Keep for $39</strong> and it&apos;s yours permanently — with a
-                printable PDF memorial card included.
+                A tribute isn&apos;t a one-time thing. Upgrade to keep it alive so family and friends can add memories, photos, and stories for years to come. Starting at <strong>$9.99/month</strong>.
               </Text>
 
               {/* Upsell CTA — smaller, secondary */}
               <Section style={{ textAlign: 'center' as const, margin: '20px 0' }}>
                 <Button href={upsellUrl} style={upsellButtonStyle}>
-                  Preserve {subjectName}&apos;s tribute — from $39 →
+                  Preserve from $9.99 →
                 </Button>
               </Section>
             </Section>

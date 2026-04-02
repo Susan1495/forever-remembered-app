@@ -24,7 +24,7 @@ export default async function CelebratePageRoute({ params }: Props) {
   const { slug } = await params
   const tribute = await getTributeBySlug(slug)
 
-  if (!tribute || tribute.status !== 'published') {
+  if (!tribute || (tribute.status !== 'published' && tribute.status !== 'processing')) {
     notFound()
   }
 
