@@ -190,9 +190,9 @@ export function TributePage({
           🕯️
         </div>
 
-        {/* Preserve this tribute CTA — visible to all visitors */}
+        {/* Preserve + Download CTAs — visible to all visitors */}
         {!orderSuccess && (
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col items-center gap-3">
             <button
               onClick={triggerUpsell}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-serif font-semibold text-white text-sm transition-all hover:opacity-90 active:scale-95"
@@ -203,6 +203,18 @@ export function TributePage({
             >
               <span aria-hidden="true">🕯️</span>
               Preserve this tribute
+            </button>
+            <button
+              onClick={triggerUpsell}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-serif font-semibold text-sm transition-all hover:opacity-90 active:scale-95"
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              <span aria-hidden="true">📄</span>
+              Download
             </button>
           </div>
         )}
@@ -255,6 +267,7 @@ export function TributePage({
         onShare={handleShare}
         onCandleLight={handleCandleLight}
         onPreserve={!orderSuccess ? triggerUpsell : undefined}
+        onDownload={!orderSuccess ? triggerUpsell : undefined}
       />
 
       {/* Upsell drawer */}

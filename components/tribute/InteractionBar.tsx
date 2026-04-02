@@ -17,6 +17,8 @@ interface InteractionBarProps {
   onCandleLight?: () => void
   /** Called when the Preserve pill is tapped — opens the upsell drawer */
   onPreserve?: () => void
+  /** Called when the Download pill is tapped — opens the upsell drawer */
+  onDownload?: () => void
 }
 
 export function InteractionBar({
@@ -26,6 +28,7 @@ export function InteractionBar({
   onShare,
   onCandleLight,
   onPreserve,
+  onDownload,
 }: InteractionBarProps) {
   const [candleCount, setCandleCount] = useState(initialCandleCount)
   const [candleLit, setCandleLit] = useState(false)
@@ -148,6 +151,22 @@ export function InteractionBar({
             aria-label="Preserve this tribute"
           >
             🕯️ Preserve
+          </button>
+        )}
+
+        {/* Download pill — opens upsell drawer */}
+        {onDownload && (
+          <button
+            onClick={onDownload}
+            className="flex-shrink-0 rounded-full text-xs px-3 py-1.5 font-serif transition-colors active:scale-95"
+            style={{
+              background: 'rgba(255,255,255,0.9)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              color: '#374151',
+            }}
+            aria-label="Download memorial card"
+          >
+            📄 Download
           </button>
         )}
       </div>
