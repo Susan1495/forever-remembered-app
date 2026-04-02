@@ -231,14 +231,32 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
           ))}
         </div>
 
-        {/* Skip link — plain anchor, no JS */}
-        <div style={{ textAlign: 'center', paddingBottom: '40px' }}>
+        {/* View tribute + skip links */}
+        <div style={{ textAlign: 'center', paddingBottom: '40px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+          <a
+            href={tributeUrl}
+            className="font-serif"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#3D2B14',
+              color: '#fff',
+              borderRadius: '999px',
+              padding: '14px 28px',
+              fontSize: '16px',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            View {tribute.subject_name}&apos;s Tribute →
+          </a>
           <a
             href={tributeUrl}
             className="font-serif"
             style={{ color: '#9B8B78', fontSize: '14px', textDecoration: 'none' }}
           >
-            No thanks, just view the free tribute →
+            No thanks, just view the free tribute
           </a>
         </div>
       </div>
