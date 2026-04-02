@@ -338,7 +338,7 @@ export default function LandingPage() {
           </p>
 
           <p className="text-white/20 text-xs">
-            Tributes are stored for 1 year on the free plan. Upgrading preserves them permanently.
+            Tributes are stored for 30 days on the free plan. Upgrading preserves them permanently.
           </p>
         </div>
       </footer>

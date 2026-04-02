@@ -116,7 +116,7 @@ export function TributeReadyEmail({
             <Section style={upsellSection}>
               <Text style={upsellHeading}>Want to preserve this forever?</Text>
               <Text style={upsellBody}>
-                Your tribute is free and available for 1 year. Upgrade to{' '}
+                Your tribute is free and available for 30 days. Upgrade to{' '}
                 <strong>Keep for $39</strong> and it&apos;s yours permanently — with a
                 printable PDF memorial card included.
               </Text>

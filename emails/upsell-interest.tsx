@@ -67,7 +67,7 @@ export function UpsellInterestEmail({
             <Hr style={divider} />
 
             <Text style={mutedText}>
-              This tribute is free and will be available for 1 year.
+              This tribute is free and will be available for 30 days.
               Preservation options will keep it permanently.
             </Text>
           </Section>

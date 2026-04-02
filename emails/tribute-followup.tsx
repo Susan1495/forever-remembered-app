@@ -71,7 +71,7 @@ export function TributeFollowupEmail({
             <Section style={urgencyBox}>
               <Text style={urgencyHeading}>⏳ Don&apos;t let it fade</Text>
               <Text style={urgencyBody}>
-                Free tributes are available for 1 year. Make it permanent before the
+                Free tributes are available for 30 days. Make it permanent before the
                 link expires — upgrade now and {subjectName}&apos;s tribute will be
                 preserved forever.
               </Text>
