@@ -160,7 +160,7 @@ export function TributePage({
         heroPhotoIdx={tribute.hero_photo_idx || 0}
       />
 
-      {/* Memories guestbook */}
+      {/* Memories / guestbook */}
       <MemoriesSection slug={tribute.slug} onUpgrade={triggerUpsell} />
 
       {/* Theme switcher */}
