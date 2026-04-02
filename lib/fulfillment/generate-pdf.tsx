@@ -23,6 +23,40 @@ import {
 } from '@react-pdf/renderer'
 import type { Tribute, TributePhoto } from '@/lib/types'
 
+// ── Photo fetcher — converts CDN URLs to base64 PNG data URLs ───────────────
+// @react-pdf/renderer has issues with progressive JPEGs ("Unknown version"
+// error). We use sharp to convert all photos to standard PNG before rendering.
+async function fetchPhotoAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) })
+    if (!res.ok) return null
+    const buffer = Buffer.from(await res.arrayBuffer())
+
+    // Convert to PNG via sharp — fixes react-pdf progressive JPEG issues
+    const sharp = (await import('sharp')).default
+    const pngBuffer = await sharp(buffer)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .png()
+      .toBuffer()
+
+    const base64 = pngBuffer.toString('base64')
+    return `data:image/png;base64,${base64}`
+  } catch {
+    return null
+  }
+}
+
+async function prefetchPhotos(photos: TributePhoto[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>()
+  await Promise.all(
+    photos.slice(0, 6).map(async (p) => {
+      const dataUrl = await fetchPhotoAsDataUrl(p.cdn_url)
+      if (dataUrl) map.set(p.cdn_url, dataUrl)
+    })
+  )
+  return map
+}
+
 // ── Register fonts ──────────────────────────────────────────────────────────
 // Using system-safe fonts — no external font downloads needed at runtime
 // @react-pdf/renderer includes Helvetica and Times-Roman by default
@@ -106,15 +140,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroPhoto: {
-    width: '100%',
-    maxHeight: 300,
-    objectFit: 'cover',
+    width: 200,
+    height: 260,
     borderRadius: 4,
   },
   heroPhotoPrint: {
-    width: '100%',
-    maxHeight: 360,
-    objectFit: 'cover',
+    width: 240,
+    height: 310,
   },
 
   // ── Text elements ──
@@ -174,8 +206,7 @@ const styles = StyleSheet.create({
   },
   photoGridItem: {
     width: '48%',
-    aspectRatio: 1.4,
-    objectFit: 'cover',
+    height: 120,
     borderRadius: 3,
   },
   photoCaption: {
@@ -263,7 +294,13 @@ function formatDates(tribute: Tribute): string {
 interface TributePDFProps {
   tribute: Tribute
   photos: TributePhoto[]
+  photoDataUrls?: Map<string, string>  // pre-fetched base64 data URLs
   isPrintReady?: boolean
+}
+
+// Helper: get photo src — use pre-fetched data URL if available, else CDN URL
+function getPhotoSrc(cdnUrl: string, photoDataUrls?: Map<string, string>): string {
+  return photoDataUrls?.get(cdnUrl) || cdnUrl
 }
 
 /**
@@ -287,6 +324,7 @@ function CoverPage({ tribute }: { tribute: Tribute }) {
 function TributeMainPage({
   tribute,
   photos,
+  photoDataUrls,
   isPrintReady = false,
 }: TributePDFProps) {
   const pageStyle = isPrintReady ? styles.pagePrint : styles.page
@@ -300,7 +338,7 @@ function TributeMainPage({
       {heroPhoto && (
         <View style={styles.heroPhotoContainer}>
           <Image
-            src={heroPhoto.cdn_url}
+            src={getPhotoSrc(heroPhoto.cdn_url, photoDataUrls)}
             style={isPrintReady ? styles.heroPhotoPrint : styles.heroPhoto}
           />
         </View>
@@ -349,6 +387,7 @@ function TributeMainPage({
 function TributeLegacyPage({
   tribute,
   photos,
+  photoDataUrls,
   isPrintReady = false,
 }: TributePDFProps) {
   const pageStyle = isPrintReady ? styles.pagePrint : styles.page
@@ -383,7 +422,7 @@ function TributeLegacyPage({
             {gridPhotos.map((photo) => (
               <View key={photo.id} style={{ width: '48%', marginBottom: 8 }}>
                 <Image
-                  src={photo.cdn_url}
+                  src={getPhotoSrc(photo.cdn_url, photoDataUrls)}
                   style={styles.photoGridItem}
                 />
                 {tribute.ai_photo_captions?.[photo.id] && (
@@ -436,9 +475,82 @@ function ClosingPage({ tribute }: { tribute: Tribute }) {
 }
 
 /**
+ * Single-page memorial card (Keep tier)
+ * Portrait A5-style — name, dates, photo, pull quote, brief text
+ */
+function MemorialCardDocument({ tribute, photos, photoDataUrls }: TributePDFProps) {
+  const dates = formatDates(tribute)
+  const heroPhoto = photos[0] || null
+  const pullQuote = tribute.ai_pull_quote
+  const opening = tribute.ai_body?.opening || tribute.subject_bio || ''
+  const preview = opening.length > 160 ? opening.slice(0, 160).trimEnd() + '…' : opening
+
+  return (
+    <Document
+      title={`${tribute.subject_name} — Memorial Card`}
+      author="Forever Remembered"
+    >
+      <Page size={[288, 432]} style={{
+        backgroundColor: '#FFF8F0',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingTop: 22,
+        paddingBottom: 28,
+      }}>
+        {/* Ornament */}
+        <Text style={{ fontSize: 9, color: '#C2874A', letterSpacing: 4, marginBottom: 8 }}>✦  ✦  ✦</Text>
+
+        {/* In Loving Memory */}
+        <Text style={{ fontFamily: 'Helvetica', fontSize: 6, color: '#A07850', letterSpacing: 2, marginBottom: 6 }}>IN LOVING MEMORY</Text>
+
+        {/* Name */}
+        <Text style={{ fontFamily: 'Times-Roman', fontSize: 20, color: '#2C1A0E', textAlign: 'center', marginBottom: 4 }}>{tribute.subject_name}</Text>
+
+        {/* Dates */}
+        {dates ? <Text style={{ fontFamily: 'Times-Roman', fontSize: 9, color: '#8B6545', fontStyle: 'italic', marginBottom: 10 }}>{dates}</Text> : null}
+
+        {/* Divider */}
+        <View style={{ width: 36, height: 1, backgroundColor: '#C2874A', marginBottom: 10 }} />
+
+        {/* Hero photo */}
+        {heroPhoto && (
+          <Image
+            src={getPhotoSrc(heroPhoto.cdn_url, photoDataUrls)}
+            style={{ width: 110, height: 130, marginBottom: 10 }}
+          />
+        )}
+
+        {/* Pull quote */}
+        {pullQuote && (
+          <Text style={{ fontFamily: 'Times-Roman', fontSize: 8, fontStyle: 'italic', color: '#6B4A28', textAlign: 'center', lineHeight: 1.6, marginBottom: 8, paddingHorizontal: 6 }}>
+            "{pullQuote}"
+          </Text>
+        )}
+
+        {/* Body preview */}
+        {preview ? (
+          <Text style={{ fontFamily: 'Times-Roman', fontSize: 7, color: '#4A3018', textAlign: 'center', lineHeight: 1.7 }}>
+            {preview}
+          </Text>
+        ) : null}
+
+        {/* Footer */}
+        <View style={{ position: 'absolute', bottom: 14, left: 0, right: 0, alignItems: 'center' }}>
+          <View style={{ width: 24, height: 1, backgroundColor: 'rgba(139,90,43,0.3)', marginBottom: 4 }} />
+          <Text style={{ fontFamily: 'Helvetica', fontSize: 5, color: '#B08050', letterSpacing: 1.5 }}>FOREVER REMEMBERED</Text>
+          <Text style={{ fontFamily: 'Helvetica', fontSize: 5, color: '#C2A070', letterSpacing: 0.5, marginTop: 1 }}>foreverremembered.ai</Text>
+        </View>
+      </Page>
+    </Document>
+  )
+}
+
+/**
  * Full PDF Document
  */
-function TributeDocument({ tribute, photos, isPrintReady = false }: TributePDFProps) {
+function TributeDocument({ tribute, photos, photoDataUrls, isPrintReady = false }: TributePDFProps) {
   const bodyContent = tribute.ai_body
   const hasExtendedContent = bodyContent?.legacy || bodyContent?.closing || photos.length > 1
 
@@ -451,9 +563,9 @@ function TributeDocument({ tribute, photos, isPrintReady = false }: TributePDFPr
       producer="Forever Remembered"
     >
       <CoverPage tribute={tribute} />
-      <TributeMainPage tribute={tribute} photos={photos} isPrintReady={isPrintReady} />
+      <TributeMainPage tribute={tribute} photos={photos} photoDataUrls={photoDataUrls} isPrintReady={isPrintReady} />
       {hasExtendedContent && (
-        <TributeLegacyPage tribute={tribute} photos={photos} isPrintReady={isPrintReady} />
+        <TributeLegacyPage tribute={tribute} photos={photos} photoDataUrls={photoDataUrls} isPrintReady={isPrintReady} />
       )}
       <ClosingPage tribute={tribute} />
     </Document>
@@ -463,6 +575,18 @@ function TributeDocument({ tribute, photos, isPrintReady = false }: TributePDFPr
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
+ * Generate a 1-page memorial card PDF (Keep tier)
+ * Portrait A5 — name, dates, photo, pull quote, brief text
+ */
+export async function generateMemorialCardPDF(
+  tribute: Tribute,
+  photos: TributePhoto[]
+): Promise<Buffer> {
+  const photoDataUrls = await prefetchPhotos(photos)
+  return renderToBuffer(<MemorialCardDocument tribute={tribute} photos={photos} photoDataUrls={photoDataUrls} />)
+}
+
+/**
  * Generate a standard memorial PDF (Keep / Cherish tiers)
  * Returns a Buffer containing the PDF bytes
  */
@@ -470,7 +594,8 @@ export async function generateTributePDF(
   tribute: Tribute,
   photos: TributePhoto[]
 ): Promise<Buffer> {
-  return renderToBuffer(<TributeDocument tribute={tribute} photos={photos} isPrintReady={false} />)
+  const photoDataUrls = await prefetchPhotos(photos)
+  return renderToBuffer(<TributeDocument tribute={tribute} photos={photos} photoDataUrls={photoDataUrls} isPrintReady={false} />)
 }
 
 /**
@@ -481,5 +606,6 @@ export async function generatePrintReadyPDF(
   tribute: Tribute,
   photos: TributePhoto[]
 ): Promise<Buffer> {
-  return renderToBuffer(<TributeDocument tribute={tribute} photos={photos} isPrintReady={true} />)
+  const photoDataUrls = await prefetchPhotos(photos)
+  return renderToBuffer(<TributeDocument tribute={tribute} photos={photos} photoDataUrls={photoDataUrls} isPrintReady={true} />)
 }

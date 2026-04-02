@@ -22,7 +22,7 @@ import {
 interface FulfillmentDeliveryEmailProps {
   subjectName: string
   tributeUrl: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
   /** Download links by label */
   downloads: Array<{
     label: string

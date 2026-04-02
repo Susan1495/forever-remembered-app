@@ -20,27 +20,15 @@ interface CelebratePageProps {
 
 const TIERS = [
   {
-    id: 'keep' as const,
-    name: 'Keep',
-    price: '$39',
-    tagline: 'Preserve it permanently',
-    features: [
-      'Digital tribute page, forever',
-      'Shareable link that never expires',
-      'PDF memorial card (printable)',
-    ],
-    highlight: false,
-    badge: null,
-  },
-  {
     id: 'cherish' as const,
     name: 'Cherish',
-    price: '$127',
-    tagline: 'A keepsake they can hold',
+    price: '$9.99/mo',
+    priceSub: 'or $79/year',
+    tagline: 'Always live. Never forgotten.',
     features: [
-      'Everything in Keep',
-      'Beautiful 8-page memorial book (PDF)',
-      'AI photo restoration',
+      'Tribute page never expires',
+      'PDF memorial card download',
+      'Anniversary reminders for family',
       'QR code for funeral programs',
     ],
     highlight: true,
@@ -49,13 +37,13 @@ const TIERS = [
   {
     id: 'legacy' as const,
     name: 'Legacy',
-    price: '$397',
-    tagline: 'Framed. Printed. Eternal.',
+    price: '$297',
+    priceSub: 'one-time, forever',
+    tagline: 'A physical keepsake to hold.',
     features: [
+      'Lifetime hosting — no subscription ever',
       'Everything in Cherish',
-      'Print-ready version for framing',
-      'Hardcover book shipped to you',
-      'Video tribute (shareable)',
+      'Hardcover book printed & shipped to you',
     ],
     highlight: false,
     badge: null,
@@ -160,10 +148,10 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
         {/* Emotional copy */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <p className="font-serif" style={{ color: '#3D2B14', fontSize: '18px', lineHeight: 1.6, marginBottom: '12px' }}>
-            Thousands of families have used Forever Remembered to honor their loved ones.
+            Your tribute is live for 30 days, free.
           </p>
           <p className="font-serif" style={{ color: '#6B5A45', fontSize: '16px', lineHeight: 1.6 }}>
-            Make this tribute last forever.
+            Subscribe to keep {tribute.subject_name}&apos;s memory alive forever &mdash; and let family receive reminders on birthdays and anniversaries.
           </p>
         </div>
 
@@ -204,9 +192,12 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
                   <h3 className="font-serif" style={{ color: '#1C1007', fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
                     {tier.name}
                   </h3>
-                  <div className="font-serif" style={{ color: tier.highlight ? '#D97706' : '#3D2B14', fontSize: '30px', fontWeight: 700, marginBottom: '4px' }}>
+                  <div className="font-serif" style={{ color: tier.highlight ? '#D97706' : '#3D2B14', fontSize: '30px', fontWeight: 700, marginBottom: '2px' }}>
                     {tier.price}
                   </div>
+                  <p className="font-serif" style={{ color: '#9B8B78', fontSize: '13px', marginBottom: '6px' }}>
+                    {tier.priceSub}
+                  </p>
                   <p className="font-serif" style={{ color: '#6B5A45', fontSize: '14px' }}>
                     {tier.tagline}
                   </p>

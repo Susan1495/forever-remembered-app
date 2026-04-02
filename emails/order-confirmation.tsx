@@ -19,7 +19,7 @@ import {
 interface OrderConfirmationEmailProps {
   subjectName: string
   tributeUrl: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
   amountFormatted: string // e.g. "$39"
   customerEmail: string
 }

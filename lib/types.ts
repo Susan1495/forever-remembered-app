@@ -55,10 +55,14 @@ export interface Tribute {
   generated_at: string | null
   expires_at: string | null
   // Phase 2 — added via 002_orders.sql migration
-  tier: 'free' | 'keep' | 'cherish' | 'legacy' | null
+  tier: 'free' | 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf' | null
   custom_subdomain: string | null
   // Phase 4 — added via 006_followup_email.sql migration
   follow_up_sent?: boolean
+  // Pricing V2 — added via 007_hosting_status.sql migration
+  hosting_expires_at: string | null
+  hosting_status: 'active' | 'paused' | 'deleted'
+  hosting_subscription_id: string | null
 }
 
 export interface TributePhoto {

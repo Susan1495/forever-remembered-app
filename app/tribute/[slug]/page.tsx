@@ -113,6 +113,55 @@ export default async function TributePageRoute({ params, searchParams }: Props) 
     notFound()
   }
 
+  // Show paused state if hosting has expired
+  if (tribute.hosting_status === 'paused') {
+    const celebrateUrl = `/tribute/${tribute.slug}/celebrate`
+    return (
+      <div
+        style={{ background: 'linear-gradient(180deg, #FFFBF5 0%, #FEF3E2 100%)', minHeight: '100vh' }}
+        className="flex items-center justify-center px-5"
+      >
+        <div style={{ maxWidth: '400px', width: '100%', textAlign: 'center', padding: '48px 24px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🕯️</div>
+          <h1
+            className="font-serif"
+            style={{ color: '#1C1007', fontSize: '26px', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px' }}
+          >
+            This tribute has been paused
+          </h1>
+          <p
+            className="font-serif"
+            style={{ color: '#6B5A45', fontSize: '16px', lineHeight: 1.6, marginBottom: '32px' }}
+          >
+            Subscribe to keep {tribute.subject_name}&apos;s memory alive forever.
+          </p>
+          <a
+            href={celebrateUrl}
+            className="font-serif"
+            style={{
+              display: 'inline-block',
+              background: '#D97706',
+              color: '#fff',
+              borderRadius: '999px',
+              padding: '14px 32px',
+              fontSize: '16px',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            Keep this tribute alive →
+          </a>
+          <p
+            className="font-serif"
+            style={{ color: '#9B8B78', fontSize: '13px', marginTop: '24px' }}
+          >
+            Starting at $9.99/month — cancel anytime
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const photos = await getTributePhotos(tribute.id)
   const heroPhoto = photos[tribute.hero_photo_idx || 0] || photos[0]
   const isCreator = created === '1'

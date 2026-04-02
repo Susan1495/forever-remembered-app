@@ -24,7 +24,7 @@ async function ensureBucket(): Promise<void> {
   if (!exists) {
     const { error } = await db.storage.createBucket(BUCKET, {
       public: false,
-      allowedMimeTypes: ['application/pdf'],
+      allowedMimeTypes: ['application/pdf', 'image/png', 'image/jpeg'],
       fileSizeLimit: 52428800, // 50 MB
     })
     if (error) {
@@ -62,6 +62,45 @@ export async function uploadPDF(
   }
 
   // Generate a signed URL valid for 1 year (365 days)
+  const SECONDS_IN_YEAR = 365 * 24 * 60 * 60
+  const { data: signedData, error: signError } = await db.storage
+    .from(BUCKET)
+    .createSignedUrl(storagePath, SECONDS_IN_YEAR)
+
+  if (signError || !signedData?.signedUrl) {
+    throw new Error(`Failed to create signed URL: ${signError?.message}`)
+  }
+
+  return signedData.signedUrl
+}
+
+/**
+ * Upload an image buffer (PNG, etc.) to Supabase storage.
+ * Returns a signed URL valid for 365 days.
+ */
+export async function uploadImage(
+  orderId: string,
+  filename: string,
+  buffer: Buffer,
+  contentType: string = 'image/png'
+): Promise<string> {
+  await ensureBucket()
+
+  const db = createServerClient()
+  const storagePath = `${orderId}/${filename}`
+
+  const { error: uploadError } = await db.storage
+    .from(BUCKET)
+    .upload(storagePath, buffer, {
+      contentType,
+      upsert: true,
+      cacheControl: '31536000',
+    })
+
+  if (uploadError) {
+    throw new Error(`Failed to upload image to storage: ${uploadError.message}`)
+  }
+
   const SECONDS_IN_YEAR = 365 * 24 * 60 * 60
   const { data: signedData, error: signError } = await db.storage
     .from(BUCKET)

@@ -1,129 +1,194 @@
 /**
- * Fulfillment Trigger — Legacy ($397) orchestrator
+ * Fulfillment Trigger — All tiers, Vercel-safe (@react-pdf/renderer)
  *
- * This file exclusively handles the Legacy tier, called from
- * lib/fulfillment/index.ts when tier === 'legacy'.
+ * Handles Keep, Cherish, and Legacy tiers using @react-pdf/renderer.
+ * No headless browser required — works on Vercel serverless.
  *
- * Tier routing summary:
- *   Keep ($39)     → lib/fulfillment/tier1.ts  (Puppeteer memorial card, 1-page)
- *   Cherish ($127) → lib/fulfillment/tier2.ts  (Puppeteer 8-page book)
- *   Legacy ($397)  → this file                 (Puppeteer 8-page book + print-ready variant)
- *
- * All PDFs are uploaded to Supabase Storage (private bucket) and
- * the customer receives signed download links valid for 1 year.
+ * Tier summary:
+ *   Keep ($39)     → 1 PDF (memorial card), 1 download link
+ *   Cherish ($127) → 2 PDFs (card + book), 2 download links
+ *   Legacy ($397)  → 2 PDFs (book digital + print-ready), 2 download links
  */
 
 import { getTributeById, updateTribute } from '@/lib/db/tributes'
 import { getTributePhotos } from '@/lib/db/photos'
 import { updateOrderStatus } from '@/lib/db/orders'
-import { generateMemorialBook } from '@/lib/fulfillment/pdf'
-import { uploadPDF } from '@/lib/fulfillment/storage'
-import { sendFulfillmentEmail } from '@/lib/fulfillment/email-delivery'
+import { generateMemorialCardPDF, generateTributePDF, generatePrintReadyPDF } from '@/lib/fulfillment/generate-pdf'
+import { uploadPDF, uploadImage } from '@/lib/fulfillment/storage'
+import { sendFulfillmentEmail, sendLegacyAdminAlert } from '@/lib/fulfillment/email-delivery'
 
 interface FulfillmentInput {
   orderId: string
   tributeId: string
   tributeSlug: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
   customerEmail: string
 }
 
 /**
- * Legacy fulfillment entry point.
+ * Universal fulfillment entry point — all tiers.
  * Safe to call multiple times — idempotent via order status check.
- *
- * Produces:
- *   1. 8-page A4 memorial book PDF (digital / screen-optimised)
- *   2. 8-page A4 memorial book PDF (print-ready, higher DPI metadata)
  */
 export async function triggerFulfillment(input: FulfillmentInput): Promise<void> {
-  const { orderId, tributeId, tributeSlug, customerEmail } = input
-  const tag = `[legacy:${orderId}]`
+  const { orderId, tributeId, tributeSlug, tier, customerEmail } = input
+  const tag = `[${tier}:${orderId}]`
 
-  console.log(`${tag} Starting Legacy fulfillment...`)
+  console.log(`${tag} Starting fulfillment (react-pdf, no browser)...`)
 
   try {
     // 1. Load tribute data
     const tribute = await getTributeById(tributeId)
-    if (!tribute) {
-      throw new Error(`Tribute not found: ${tributeId}`)
-    }
+    if (!tribute) throw new Error(`Tribute not found: ${tributeId}`)
 
     // 2. Load photos
     const photos = await getTributePhotos(tributeId)
     console.log(`${tag} Tribute: "${tribute.subject_name}" | Photos: ${photos.length}`)
 
     const safeName = tribute.subject_name.replace(/[^a-z0-9]/gi, '-').toLowerCase()
+    const name = tribute.subject_name
 
-    // 3. Generate 8-page memorial book × 2 variants in parallel
-    console.log(`${tag} Generating 8-page memorial book + print-ready variant...`)
-    const [memorialPdf, printReadyPdf] = await Promise.all([
-      generateMemorialBook(tribute, photos),
-      generateMemorialBook(tribute, photos, { printReady: true }),
-    ])
-    console.log(
-      `${tag} Digital: ${(memorialPdf.length / 1024).toFixed(1)} KB | ` +
-        `Print-ready: ${(printReadyPdf.length / 1024).toFixed(1)} KB`
-    )
+    // 3. Generate PDFs based on tier
+    let downloads: Array<{ label: string; url: string; description: string }> = []
 
-    // 4. Upload both PDFs to Supabase Storage
-    console.log(`${tag} Uploading Legacy PDFs...`)
-    const [memorialUrl, printReadyUrl] = await Promise.all([
-      uploadPDF(orderId, `${safeName}-memorial-book.pdf`, memorialPdf),
-      uploadPDF(orderId, `${safeName}-print-ready.pdf`, printReadyPdf),
-    ])
-    console.log(`${tag} Both PDFs uploaded.`)
+    if (tier === 'keep' || tier === 'pdf') {
+      // Keep: 1 memorial PDF
+      console.log(`${tag} Generating memorial card PDF...`)
+      const pdfBuffer = await generateMemorialCardPDF(tribute, photos)
+      console.log(`${tag} PDF: ${(pdfBuffer.length / 1024).toFixed(1)} KB`)
 
-    // 5. Send fulfillment email
+      const pdfUrl = await uploadPDF(orderId, `${safeName}-memorial-card.pdf`, pdfBuffer)
+      downloads = [
+        {
+          label: `${name} — Memorial Card PDF`,
+          url: pdfUrl,
+          description: 'A beautiful memorial card — perfect for printing, framing, or sharing with family.',
+        },
+      ]
+
+    } else if (tier === 'cherish' || tier === 'cherish_monthly' || tier === 'cherish_annual') {
+      // Cherish: card PDF + book PDF + QR code PNG
+      console.log(`${tag} Generating memorial card, book PDFs + QR code...`)
+      const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://foreverremembered.ai'
+      const tributeUrl = `${BASE_URL}/tribute/${tributeSlug}`
+
+      // Generate QR code as PNG buffer
+      const QRCode = (await import('qrcode')).default
+      const qrDataUrl = await QRCode.toDataURL(tributeUrl, {
+        errorCorrectionLevel: 'M',
+        type: 'image/png',
+        width: 400,
+        margin: 2,
+        color: { dark: '#2C1A0E', light: '#FFF8F0' },
+      })
+      // Convert data URL to buffer
+      const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, '')
+      const qrBuffer = Buffer.from(qrBase64, 'base64')
+
+      const [cardBuffer, bookBuffer] = await Promise.all([
+        generateMemorialCardPDF(tribute, photos),
+        generateTributePDF(tribute, photos),
+      ])
+      console.log(`${tag} Card: ${(cardBuffer.length / 1024).toFixed(1)} KB | Book: ${(bookBuffer.length / 1024).toFixed(1)} KB | QR: ${(qrBuffer.length / 1024).toFixed(1)} KB`)
+
+      const [cardUrl, bookUrl, qrUrl] = await Promise.all([
+        uploadPDF(orderId, `${safeName}-memorial-card.pdf`, cardBuffer),
+        uploadPDF(orderId, `${safeName}-memorial-book.pdf`, bookBuffer),
+        uploadImage(orderId, `${safeName}-qr-code.png`, qrBuffer),
+      ])
+      downloads = [
+        {
+          label: `${name} — Memorial Card PDF`,
+          url: cardUrl,
+          description: 'A beautiful memorial card — perfect for printing or framing.',
+        },
+        {
+          label: `${name} — Memorial Book PDF (8 pages)`,
+          url: bookUrl,
+          description: 'A full 8-page memorial book with photos and tribute — beautifully formatted for print or digital sharing.',
+        },
+        {
+          label: `${name} — QR Code (PNG)`,
+          url: qrUrl,
+          description: 'Scan to visit the tribute page. Perfect for printing on funeral programs, cards, or framing.',
+        },
+      ]
+
+    } else {
+      // Legacy: digital book + print-ready book
+      console.log(`${tag} Generating memorial book + print-ready variant...`)
+      const [memorialPdf, printReadyPdf] = await Promise.all([
+        generateTributePDF(tribute, photos),
+        generatePrintReadyPDF(tribute, photos),
+      ])
+      console.log(`${tag} Digital: ${(memorialPdf.length / 1024).toFixed(1)} KB | Print-ready: ${(printReadyPdf.length / 1024).toFixed(1)} KB`)
+
+      const [memorialUrl, printReadyUrl] = await Promise.all([
+        uploadPDF(orderId, `${safeName}-memorial-book.pdf`, memorialPdf),
+        uploadPDF(orderId, `${safeName}-print-ready.pdf`, printReadyPdf),
+      ])
+      downloads = [
+        {
+          label: `${name} — Memorial Book (Digital)`,
+          url: memorialUrl,
+          description: 'Beautifully designed 8-page memorial book — optimised for screens, email, and casual home printing.',
+        },
+        {
+          label: `${name} — Print-Ready Edition`,
+          url: printReadyUrl,
+          description: 'High-resolution print-ready PDF at A4. Take to FedEx, Staples, or your local print shop for a professional finish.',
+        },
+      ]
+    }
+
+    // 4. Send fulfillment email
     if (customerEmail) {
-      console.log(`${tag} Sending Legacy fulfillment email to ${customerEmail}...`)
+      console.log(`${tag} Sending fulfillment email to ${customerEmail}...`)
       await sendFulfillmentEmail({
         to: customerEmail,
-        subjectName: tribute.subject_name,
+        subjectName: name,
         tributeSlug,
-        tier: 'legacy',
-        downloads: [
-          {
-            label: `${tribute.subject_name} — Memorial Book (Digital)`,
-            url: memorialUrl,
-            description:
-              'Beautifully designed 8-page memorial book — optimised for screens, email, and casual home printing.',
-          },
-          {
-            label: `${tribute.subject_name} — Print-Ready Edition`,
-            url: printReadyUrl,
-            description:
-              'High-resolution print-ready PDF at A4. Take to FedEx, Staples, or your local print shop for a professional finish.',
-          },
-        ],
+        tier,
+        downloads,
       })
       console.log(`${tag} Email sent.`)
     } else {
       console.warn(`${tag} No customer email — skipping fulfillment email.`)
     }
 
+    // 5. Send admin alert for Legacy orders (manual print + ship)
+    if (tier === 'legacy') {
+      const printReadyDownload = downloads.find(d => d.label.includes('Print-Ready'))
+      const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://foreverremembered.ai'
+      await sendLegacyAdminAlert({
+        subjectName: name,
+        customerEmail,
+        printReadyPdfUrl: printReadyDownload?.url || downloads[0]?.url || '',
+        tributeUrl: `${BASE_URL}/tribute/${tributeSlug}`,
+        orderId,
+        amountFormatted: '$397',
+      }).catch(err => console.error(`${tag} Admin alert failed:`, err))
+    }
+
     // 6. Update order + tribute in DB
     const fulfilledAt = new Date().toISOString()
     await updateOrderStatus(orderId, 'fulfilled', {
-      memorialPdfUrl: memorialUrl,
-      printReadyPdfUrl: printReadyUrl,
-      tier: 'legacy',
+      tier,
       fulfilledAt,
+      pdfCount: downloads.length,
     })
 
     await updateTribute(tributeId, {
-      tier: 'legacy',
-      expires_at: null, // permanent — never expires
+      tier,
+      expires_at: null,
     })
 
-    console.log(`${tag} ✓ Legacy fulfillment complete.`)
+    console.log(`${tag} ✓ Fulfillment complete.`)
   } catch (error) {
     console.error(`${tag} Fulfillment failed:`, error)
     await updateOrderStatus(orderId, 'failed', {
       error: error instanceof Error ? error.message : String(error),
       failedAt: new Date().toISOString(),
     })
-    // Re-throw so the webhook can return 500 and Stripe will retry
     throw error
   }
 }

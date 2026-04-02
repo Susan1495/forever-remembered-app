@@ -13,6 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { waitUntil } from '@vercel/functions'
 import { updateOrderStatus } from '@/lib/db/orders'
 import { runFulfillment } from '@/lib/fulfillment'
 import { createServerClient } from '@/lib/supabase'
@@ -61,16 +62,18 @@ export async function POST(req: NextRequest) {
   // Reset status to processing
   await updateOrderStatus(order.id, 'processing')
 
-  // Trigger fulfillment (async — returns immediately)
-  runFulfillment({
-    orderId: order.id,
-    tributeId: order.tribute_id,
-    tributeSlug,
-    tier: order.tier,
-    customerEmail: order.customer_email,
-  }).catch((err) => {
-    console.error(`Retry fulfillment failed for order ${order.id}:`, err)
-  })
+  // Trigger fulfillment — waitUntil keeps the function alive until PDF + email complete
+  waitUntil(
+    runFulfillment({
+      orderId: order.id,
+      tributeId: order.tribute_id,
+      tributeSlug,
+      tier: order.tier,
+      customerEmail: order.customer_email,
+    }).catch((err) => {
+      console.error(`Retry fulfillment failed for order ${order.id}:`, err)
+    })
+  )
 
   return NextResponse.json({
     success: true,

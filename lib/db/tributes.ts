@@ -44,11 +44,17 @@ export async function createTribute(tribute: {
   subject_age_group: string
 }): Promise<Tribute> {
   const db = createServerClient()
+
+  // Free trial: expires 30 days from creation
+  const trialExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
   const { data, error } = await db
     .from('tributes')
     .insert({
       ...tribute,
       status: 'processing',
+      hosting_status: 'active',
+      hosting_expires_at: trialExpiresAt,
     })
     .select()
     .single()
@@ -74,10 +80,12 @@ export async function updateTribute(
     published_at: string
     generated_at: string
     creator_email: string
-    tier: 'free' | 'keep' | 'cherish' | 'legacy'
+    tier: 'free' | 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
     expires_at: string | null
     follow_up_sent: boolean
-
+    hosting_status: 'active' | 'paused' | 'deleted'
+    hosting_expires_at: string | null
+    hosting_subscription_id: string | null
   }>
 ): Promise<void> {
   const db = createServerClient()

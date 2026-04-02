@@ -5,12 +5,14 @@
 
 import { createServerClient } from '@/lib/supabase'
 
+export type OrderTier = 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
+
 export interface Order {
   id: string
   tribute_id: string
   stripe_session_id: string
   stripe_payment_intent: string | null
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: OrderTier
   amount_cents: number
   status: 'pending' | 'processing' | 'fulfilled' | 'failed'
   customer_email: string
@@ -27,7 +29,7 @@ export async function createOrder(order: {
   tribute_id: string
   stripe_session_id: string
   stripe_payment_intent?: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: OrderTier
   amount_cents: number
   customer_email: string
 }): Promise<Order | null> {

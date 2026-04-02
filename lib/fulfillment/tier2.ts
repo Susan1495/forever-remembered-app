@@ -20,7 +20,7 @@ import QRCode from 'qrcode'
 import { getTributeById, updateTribute } from '@/lib/db/tributes'
 import { getTributePhotos } from '@/lib/db/photos'
 import { updateOrderStatus } from '@/lib/db/orders'
-import { generateMemorialCard, generateMemorialBook } from '@/lib/fulfillment/pdf'
+import { generateTributePDF } from '@/lib/fulfillment/generate-pdf'
 import { uploadPDF } from '@/lib/fulfillment/storage'
 import { sendFulfillmentEmail } from '@/lib/fulfillment/email-delivery'
 
@@ -81,8 +81,8 @@ export async function fulfillTier2(input: Tier2Input): Promise<Tier2Result> {
   // ── 2. Generate PDFs (parallel) ───────────────────────────────────────────
   console.log(`${tag} Generating memorial card + book PDFs...`)
   const [cardBuffer, bookBuffer, qrCodeDataUrl] = await Promise.all([
-    generateMemorialCard(tribute, photos),
-    generateMemorialBook(tribute, photos),
+    generateTributePDF(tribute, photos),
+    generateTributePDF(tribute, photos),
     generateQrCode(tributeSlug),
   ])
   console.log(`${tag} Card: ${(cardBuffer.length / 1024).toFixed(1)} KB | Book: ${(bookBuffer.length / 1024).toFixed(1)} KB`)

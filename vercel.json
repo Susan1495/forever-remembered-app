@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/follow-up-email",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/expire-tributes",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/anniversary-reminders",
+      "schedule": "0 9 * * *"
     }
   ]
 }

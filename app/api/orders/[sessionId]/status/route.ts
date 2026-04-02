@@ -24,7 +24,7 @@ import { getOrderBySessionId } from '@/lib/db/orders'
 export const runtime = 'nodejs'
 
 interface OrderStatusResponse {
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
   status: 'pending' | 'processing' | 'fulfilled' | 'failed'
   fulfillmentData: Record<string, unknown> | null
   downloadUrls: string[]

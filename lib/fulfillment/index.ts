@@ -31,7 +31,7 @@ export interface FulfillmentInput {
   orderId: string
   tributeId: string
   tributeSlug: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
   customerEmail: string
 }
 
@@ -54,7 +54,7 @@ export async function runFulfillment(input: FulfillmentInput): Promise<void> {
   console.log(`${tag} Starting fulfillment pipeline... (env: ${IS_VERCEL ? 'vercel' : 'local'})`)
 
   try {
-    if (!IS_VERCEL && (tier === 'keep' || tier === 'cherish')) {
+    if (!IS_VERCEL && (tier === 'keep' || tier === 'cherish' || tier === 'cherish_monthly' || tier === 'cherish_annual')) {
       // Local / non-serverless: use Puppeteer-based HTML→PDF for richer output
       const { fulfillTier1 } = await import('@/lib/fulfillment/tier1')
       const { fulfillTier2 } = await import('@/lib/fulfillment/tier2')

@@ -10,7 +10,7 @@ import { useState } from 'react'
 
 interface CheckoutButtonProps {
   tributeSlug: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'cherish' | 'legacy'
   label: string
   highlight: boolean
 }

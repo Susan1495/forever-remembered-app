@@ -24,39 +24,34 @@ type DrawerStage = 'prompt' | 'tiers' | 'email' | 'done' | 'loading'
 
 const TIERS = [
   {
-    id: 'keep' as const,
-    name: 'Keep',
-    price: '$39',
-    tagline: 'Permanent tribute, always here',
-    features: ['Permanent page — never expires', 'PDF memorial card', 'Shareable link forever'],
+    id: 'cherish_monthly' as const,
+    name: 'Cherish',
+    price: '$9.99/mo',
+    tagline: 'Always live — add memories forever',
+    features: ['Always-live tribute page', 'PDF memorial card', 'Anniversary reminders', 'QR code for sharing'],
     color: '#D97706',
     emoji: '🕯️',
+    featured: true,
   },
   {
-    id: 'cherish' as const,
-    name: 'Cherish',
-    price: '$127',
-    tagline: 'A keepsake they deserve',
-    features: [
-      'Everything in Keep',
-      'Photo restoration',
-      '8-page memorial book PDF',
-      'QR code for funeral programs',
-    ],
+    id: 'cherish_annual' as const,
+    name: 'Cherish Annual',
+    price: '$79/yr',
+    tagline: 'Best value — save 34%',
+    features: ['Everything in Cherish', 'Two months free vs monthly', 'Shareable link forever'],
     color: '#9D4E2C',
     emoji: '📖',
-    featured: true,
   },
   {
     id: 'legacy' as const,
     name: 'Legacy',
-    price: '$397',
-    tagline: 'Their story, preserved forever',
+    price: '$297',
+    tagline: 'Lifetime hosting + hardcover book',
     features: [
-      'Everything in Cherish',
-      'Full AI biography (2,000+ words)',
-      'Video tribute',
-      'Hardcover book shipped to you',
+      'Lifetime hosting — pay once',
+      'Hardcover memorial book shipped to you',
+      'PDF card + QR code',
+      'Anniversary reminders forever',
     ],
     color: '#5C3317',
     emoji: '📚',
@@ -89,7 +84,7 @@ export function UpsellDrawer({
     setStage('tiers')
   }
 
-  const handleTierSelect = async (tier: 'keep' | 'cherish' | 'legacy') => {
+  const handleTierSelect = async (tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf') => {
     if (!tributeSlug) {
       setError('Something went wrong. Please refresh and try again.')
       return
@@ -266,17 +261,14 @@ function PromptStage({
       <p className="font-serif text-white text-xl font-semibold mb-3 leading-snug">
         You made something beautiful for {subjectName}.
       </p>
-      <p className="text-white/70 text-sm leading-relaxed mb-2 font-serif">
-        This tribute is free — and always will be. Right now it&apos;s stored for 1 year.
-      </p>
       <p className="text-white/70 text-sm leading-relaxed mb-8 font-serif">
-        Want to preserve it permanently?
+        Want to preserve this forever? A tribute isn&apos;t a one-time thing. Upgrade to keep your tribute alive so family and friends can add memories, photos, and stories for years to come. Starting at $9.99/month.
       </p>
       <button
         onClick={onYes}
         className="w-full bg-amber-600 hover:bg-amber-700 text-white font-serif font-semibold text-base rounded-full py-4 px-6 transition-colors mb-3 min-h-[52px]"
       >
-        Yes, preserve it →
+        Preserve from $9.99 →
       </button>
       <button
         onClick={onClose}
@@ -296,7 +288,7 @@ function TiersStage({
   error,
 }: {
   subjectName: string
-  onSelect: (tier: 'keep' | 'cherish' | 'legacy') => void
+  onSelect: (tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf') => void
   onClose: () => void
   loadingTier: string | null
   error: string | null
@@ -307,7 +299,7 @@ function TiersStage({
         Choose how to honor {subjectName}.
       </p>
       <p className="text-white/60 text-sm mb-6 font-serif">
-        One-time payment. No subscription.
+        Monthly, annual, or pay once. Cancel anytime.
       </p>
 
       {error && (
@@ -369,7 +361,9 @@ function TiersStage({
                     <div className="font-serif font-bold text-white text-xl">
                       {tier.price}
                     </div>
-                    <div className="text-white/40 text-xs">once</div>
+                    {tier.id === 'legacy' && (
+                      <div className="text-white/40 text-xs">one-time</div>
+                    )}
                     {isLoading && (
                       <div className="mt-2 flex justify-end">
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />

@@ -6,6 +6,7 @@
 
 import { Resend } from 'resend'
 import { FulfillmentDeliveryEmail } from '@/emails/fulfillment-delivery'
+import { LegacyAdminAlertEmail } from '@/emails/legacy-admin-alert'
 
 const FROM = process.env.EMAIL_FROM || 'hello@foreverremembered.ai'
 const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://foreverremembered.ai'
@@ -20,8 +21,40 @@ interface SendFulfillmentEmailOptions {
   to: string
   subjectName: string
   tributeSlug: string
-  tier: 'keep' | 'cherish' | 'legacy'
+  tier: 'keep' | 'cherish' | 'legacy' | 'cherish_monthly' | 'cherish_annual' | 'pdf'
   downloads: DownloadLink[]
+}
+
+interface LegacyAdminAlertOptions {
+  subjectName: string
+  customerEmail: string
+  shippingAddress?: Record<string, string> | null
+  printReadyPdfUrl: string
+  tributeUrl: string
+  orderId: string
+  amountFormatted: string
+}
+
+export async function sendLegacyAdminAlert(options: LegacyAdminAlertOptions): Promise<void> {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('placeholder')) {
+    console.warn('Resend not configured — skipping legacy admin alert')
+    return
+  }
+
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'salcarnevale1@gmail.com'
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
+  try {
+    await resend.emails.send({
+      from: `Forever Remembered <hello@foreverremembered.ai>`,
+      to: ADMIN_EMAIL,
+      subject: `🖨️ Legacy Order — ${options.subjectName} — Ship Now`,
+      react: LegacyAdminAlertEmail(options),
+    })
+    console.log(`Legacy admin alert sent to ${ADMIN_EMAIL} for order ${options.orderId}`)
+  } catch (error) {
+    console.error('Failed to send legacy admin alert:', error)
+  }
 }
 
 export async function sendFulfillmentEmail(options: SendFulfillmentEmailOptions): Promise<void> {

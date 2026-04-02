@@ -16,7 +16,7 @@
 import { getTributeById, updateTribute } from '@/lib/db/tributes'
 import { getTributePhotos } from '@/lib/db/photos'
 import { updateOrderStatus } from '@/lib/db/orders'
-import { generateMemorialCard } from '@/lib/fulfillment/pdf'
+import { generateTributePDF } from '@/lib/fulfillment/generate-pdf'
 import { uploadPDF } from '@/lib/fulfillment/storage'
 import { sendFulfillmentEmail } from '@/lib/fulfillment/email-delivery'
 
@@ -52,7 +52,7 @@ export async function fulfillTier1(input: Tier1Input): Promise<Tier1Result> {
 
   // ── 2. Generate PDF ───────────────────────────────────────────────────────
   console.log(`${tag} Generating memorial card PDF...`)
-  const pdfBuffer = await generateMemorialCard(tribute, photos)
+  const pdfBuffer = await generateTributePDF(tribute, photos)
   console.log(`${tag} PDF generated: ${(pdfBuffer.length / 1024).toFixed(1)} KB`)
 
   // ── 3. Upload to Supabase Storage ─────────────────────────────────────────
