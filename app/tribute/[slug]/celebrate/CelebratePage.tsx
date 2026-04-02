@@ -13,6 +13,7 @@
 import type { Tribute } from '@/lib/types'
 import { CheckoutButton } from './CheckoutButton'
 import { CherishToggle } from './CherishToggle'
+import { TributeViewButton } from './TributeViewButton'
 
 interface CelebratePageProps {
   tribute: Tribute
@@ -233,24 +234,11 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
 
         {/* View tribute + skip links */}
         <div style={{ textAlign: 'center', paddingBottom: '40px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
-          <a
-            href={tributeUrl}
-            className="font-serif"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: '#3D2B14',
-              color: '#fff',
-              borderRadius: '999px',
-              padding: '14px 28px',
-              fontSize: '16px',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            View {tribute.subject_name}&apos;s Tribute →
-          </a>
+          <TributeViewButton
+            slug={tribute.slug}
+            subjectName={tribute.subject_name}
+            initialStatus={tribute.status}
+          />
           <a
             href={tributeUrl}
             className="font-serif"
