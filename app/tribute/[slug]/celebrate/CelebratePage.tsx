@@ -12,6 +12,7 @@
 
 import type { Tribute } from '@/lib/types'
 import { CheckoutButton } from './CheckoutButton'
+import { CherishToggle } from './CherishToggle'
 
 interface CelebratePageProps {
   tribute: Tribute
@@ -193,13 +194,7 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
                   <h3 className="font-serif" style={{ color: '#1C1007', fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
                     {tier.name}
                   </h3>
-                  <div className="font-serif" style={{ color: tier.highlight ? '#D97706' : '#3D2B14', fontSize: '30px', fontWeight: 700, marginBottom: '2px' }}>
-                    {tier.price}
-                  </div>
-                  <p className="font-serif" style={{ color: '#9B8B78', fontSize: '13px', marginBottom: '6px' }}>
-                    {tier.priceSub}
-                  </p>
-                  <p className="font-serif" style={{ color: '#6B5A45', fontSize: '14px' }}>
+                  <p className="font-serif" style={{ color: '#6B5A45', fontSize: '14px', marginBottom: '16px' }}>
                     {tier.tagline}
                   </p>
                 </div>
@@ -213,13 +208,24 @@ export function CelebratePage({ tribute, heroPhotoUrl }: CelebratePageProps) {
                   ))}
                 </ul>
 
-                {/* Isolated client island — state changes here don't affect scroll */}
-                <CheckoutButton
-                  tributeSlug={tribute.slug}
-                  tier={tier.id}
-                  label={`Choose ${tier.name}`}
-                  highlight={tier.highlight}
-                />
+                {tier.highlight ? (
+                  <CherishToggle tributeSlug={tribute.slug} />
+                ) : (
+                  <>
+                    <div className="font-serif" style={{ color: '#3D2B14', fontSize: '30px', fontWeight: 700, marginBottom: '2px' }}>
+                      {tier.price}
+                    </div>
+                    <p className="font-serif" style={{ color: '#9B8B78', fontSize: '13px', marginBottom: '16px' }}>
+                      {tier.priceSub}
+                    </p>
+                    <CheckoutButton
+                      tributeSlug={tribute.slug}
+                      tier={tier.id}
+                      label={`Choose ${tier.name}`}
+                      highlight={false}
+                    />
+                  </>
+                )}
               </div>
             </div>
           ))}
