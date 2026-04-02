@@ -77,6 +77,19 @@ export async function getOrderBySessionId(sessionId: string): Promise<Order | nu
 /**
  * Update order status
  */
+export async function getOrderByTributeId(tributeId: string): Promise<Order | null> {
+  const db = createServerClient()
+  const { data } = await db
+    .from('orders')
+    .select('*')
+    .eq('tribute_id', tributeId)
+    .eq('status', 'fulfilled')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+  return data || null
+}
+
 export async function updateOrderStatus(
   id: string,
   status: Order['status'],

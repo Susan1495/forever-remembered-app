@@ -171,10 +171,15 @@ export async function triggerFulfillment(input: FulfillmentInput): Promise<void>
 
     // 6. Update order + tribute in DB
     const fulfilledAt = new Date().toISOString()
+    // Store download URLs in fulfillment_data so the download endpoint can serve them
+    const urlMap: Record<string, string> = {}
+    downloads.forEach((d, i) => { urlMap[`url_${i}`] = d.url })
     await updateOrderStatus(orderId, 'fulfilled', {
       tier,
       fulfilledAt,
       pdfCount: downloads.length,
+      downloads: downloads.map(d => ({ label: d.label, url: d.url })),
+      ...urlMap,
     })
 
     await updateTribute(tributeId, {

@@ -94,6 +94,25 @@ export function TributePage({
     triggerUpsell()
   }
 
+  const handleDownload = async () => {
+    const res = await fetch(`/api/tribute/${tribute.slug}/download`)
+    const data = await res.json()
+    if (res.status === 402 || data.requiresUpgrade) {
+      triggerUpsell()
+      return
+    }
+    if (res.status === 202 || data.pending) {
+      alert(data.message || 'Your files are being prepared. Check your email for download links.')
+      return
+    }
+    if (data.downloads?.length) {
+      // Open first download in new tab; if multiple, open all
+      data.downloads.forEach((d: { url: string }) => window.open(d.url, '_blank'))
+      return
+    }
+    triggerUpsell()
+  }
+
   return (
     <div data-theme={theme} className="tribute-root">
       {/* Order success banner */}
@@ -209,7 +228,7 @@ export function TributePage({
               Preserve this tribute
             </button>
             <button
-              onClick={triggerUpsell}
+              onClick={handleDownload}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-serif font-semibold text-sm transition-all hover:opacity-90 active:scale-95"
               style={{
                 background: 'var(--color-surface)',
@@ -271,7 +290,7 @@ export function TributePage({
         onShare={handleShare}
         onCandleLight={handleCandleLight}
         onPreserve={!orderSuccess ? triggerUpsell : undefined}
-        onDownload={!orderSuccess ? triggerUpsell : undefined}
+        onDownload={handleDownload}
       />
 
       {/* Upsell drawer */}
