@@ -90,6 +90,14 @@ export default function CreatePage() {
     setSubmitError(null)
 
     try {
+      // Check for failed photo uploads
+      const failedPhotos = form.photos.filter(p => p.uploadStatus === 'error')
+      if (failedPhotos.length > 0) {
+        setSubmitError('One or more photos failed to upload. Please remove them and try again.')
+        setIsSubmitting(false)
+        return
+      }
+
       // Collect uploaded photo paths
       const photoStoragePaths = form.photos
         .filter(p => p.uploadStatus === 'done' && p.storagePath)
