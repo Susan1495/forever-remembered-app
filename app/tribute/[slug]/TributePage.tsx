@@ -13,6 +13,7 @@ import { PhotoGallery } from '@/components/tribute/PhotoGallery'
 import { InteractionBar } from '@/components/tribute/InteractionBar'
 import { UpsellDrawer } from '@/components/tribute/UpsellDrawer'
 import { ThemeSwitcher } from '@/components/tribute/ThemeSwitcher'
+import { MemoriesSection } from '@/components/tribute/MemoriesSection'
 import type { Tribute, TributePhoto, TemplateId } from '@/lib/types'
 
 interface TributePageProps {
@@ -158,6 +159,9 @@ export function TributePage({
         captions={tribute.ai_photo_captions}
         heroPhotoIdx={tribute.hero_photo_idx || 0}
       />
+
+      {/* Memories guestbook */}
+      <MemoriesSection slug={tribute.slug} onUpgrade={triggerUpsell} />
 
       {/* Theme switcher */}
       <div
